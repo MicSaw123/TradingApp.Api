@@ -1,0 +1,77 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradingApp.Api", "TradingApp.Api\TradingApp.Api.csproj", "{706CF967-87D2-4416-92A6-DC853B7BCE9E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TradingApp.Domain", "TradingApp.Domain", "{2441F624-C06B-4C19-A2FD-601D90D0C5E3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TradingApp.Application", "TradingApp.Application", "{34F15663-CBFB-4E78-863B-76848BEC9C84}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradingApp.Application", "TradingApp.Application\TradingApp.Application.csproj", "{2B6BA399-5E90-4BDA-A54E-7DEAA5D9BF64}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradingApp.Domain", "TradingApp.Domain\TradingApp.Domain.csproj", "{0AFFD991-CA95-471A-B9A4-F8F3989FC6B5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TradingApp.Database", "TradingApp.Database", "{237B49D6-D2D5-4AF1-B36C-1F1AF04076CB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradingApp.Database", "TradingApp.Database\TradingApp.Database.csproj", "{1321DE02-6E59-4016-9AA8-5A770B67B9C2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradingApp.Domain.Errors", "TradingApp.Domain.Errors\TradingApp.Domain.Errors.csproj", "{1E50E6B6-DBA6-40D2-9051-1F400FE2D014}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradingApp.Application.DataTransferObjects", "TradingApp.Application.DataTransferObjects\TradingApp.Application.DataTransferObjects.csproj", "{2B584AEB-6D0F-4DAA-9373-B49C915FF508}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TradingApp.BackgroundTasks", "TradingApp.BackgroundTasks", "{1C446641-DB2B-4DCD-97DE-77CD94834445}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradingApp.BackgroundTasks", "TradingApp.BackgroundTasks\TradingApp.BackgroundTasks.csproj", "{03CFAE71-DF28-4345-AC28-D8A75EA2F54E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{706CF967-87D2-4416-92A6-DC853B7BCE9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{706CF967-87D2-4416-92A6-DC853B7BCE9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{706CF967-87D2-4416-92A6-DC853B7BCE9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{706CF967-87D2-4416-92A6-DC853B7BCE9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B6BA399-5E90-4BDA-A54E-7DEAA5D9BF64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B6BA399-5E90-4BDA-A54E-7DEAA5D9BF64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B6BA399-5E90-4BDA-A54E-7DEAA5D9BF64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B6BA399-5E90-4BDA-A54E-7DEAA5D9BF64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AFFD991-CA95-471A-B9A4-F8F3989FC6B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AFFD991-CA95-471A-B9A4-F8F3989FC6B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AFFD991-CA95-471A-B9A4-F8F3989FC6B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AFFD991-CA95-471A-B9A4-F8F3989FC6B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1321DE02-6E59-4016-9AA8-5A770B67B9C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1321DE02-6E59-4016-9AA8-5A770B67B9C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1321DE02-6E59-4016-9AA8-5A770B67B9C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1321DE02-6E59-4016-9AA8-5A770B67B9C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E50E6B6-DBA6-40D2-9051-1F400FE2D014}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E50E6B6-DBA6-40D2-9051-1F400FE2D014}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E50E6B6-DBA6-40D2-9051-1F400FE2D014}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E50E6B6-DBA6-40D2-9051-1F400FE2D014}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B584AEB-6D0F-4DAA-9373-B49C915FF508}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B584AEB-6D0F-4DAA-9373-B49C915FF508}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B584AEB-6D0F-4DAA-9373-B49C915FF508}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B584AEB-6D0F-4DAA-9373-B49C915FF508}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03CFAE71-DF28-4345-AC28-D8A75EA2F54E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03CFAE71-DF28-4345-AC28-D8A75EA2F54E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03CFAE71-DF28-4345-AC28-D8A75EA2F54E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03CFAE71-DF28-4345-AC28-D8A75EA2F54E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2B6BA399-5E90-4BDA-A54E-7DEAA5D9BF64} = {34F15663-CBFB-4E78-863B-76848BEC9C84}
+		{0AFFD991-CA95-471A-B9A4-F8F3989FC6B5} = {2441F624-C06B-4C19-A2FD-601D90D0C5E3}
+		{1321DE02-6E59-4016-9AA8-5A770B67B9C2} = {237B49D6-D2D5-4AF1-B36C-1F1AF04076CB}
+		{1E50E6B6-DBA6-40D2-9051-1F400FE2D014} = {2441F624-C06B-4C19-A2FD-601D90D0C5E3}
+		{2B584AEB-6D0F-4DAA-9373-B49C915FF508} = {34F15663-CBFB-4E78-863B-76848BEC9C84}
+		{03CFAE71-DF28-4345-AC28-D8A75EA2F54E} = {1C446641-DB2B-4DCD-97DE-77CD94834445}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {00FD89E5-B875-4723-BC20-230ACFBFA7C1}
+	EndGlobalSection
+EndGlobal
