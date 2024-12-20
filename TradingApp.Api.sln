@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradingApp.Application.Data
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TradingApp.BackgroundTasks", "TradingApp.BackgroundTasks", "{1C446641-DB2B-4DCD-97DE-77CD94834445}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradingApp.BackgroundTasks", "TradingApp.BackgroundTasks\TradingApp.BackgroundTasks.csproj", "{03CFAE71-DF28-4345-AC28-D8A75EA2F54E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TradingApp.BackgroundTasks", "TradingApp.BackgroundTasks\TradingApp.BackgroundTasks.csproj", "{03CFAE71-DF28-4345-AC28-D8A75EA2F54E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

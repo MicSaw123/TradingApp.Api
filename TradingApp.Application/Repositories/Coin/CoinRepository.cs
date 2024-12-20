@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using TradingApp.Application.DataTransferObjects.Coin;
+using TradingApp.Application.DataTransferObjects.PaginationDto;
 using TradingApp.Application.Services.Interfaces.Database;
 using TradingApp.Domain.Coins;
-using TradingApp.Domain.Errors;
+using TradingApp.Domain.Errors.Errors.CoinErrors;
 
 namespace TradingApp.Application.Repositories.CoinRepository
 {
@@ -28,20 +28,9 @@ namespace TradingApp.Application.Repositories.CoinRepository
             var result = await _http.GetFromJsonAsync<IEnumerable<CoinDto>>(baseApiAddress);
             if (result is null)
             {
-                return RequestResult<IEnumerable<CoinDto>>.Failure(Error.ErrorUnknown);
+                return RequestResult<IEnumerable<CoinDto>>.Failure(CoinError.ErrorFetchCoins);
             }
             return RequestResult<IEnumerable<CoinDto>>.Success(result);
-        }
-
-        public async Task<RequestResult<string>> GetCoinNameById(int coinId)
-        {
-            var coin = await _context.Set<Coin>().FirstAsync(c => c.Id == coinId);
-            string coinName = coin.Symbol;
-            if (coinName is null)
-            {
-                return RequestResult<string>.Failure(Error.ErrorUnknown);
-            }
-            return RequestResult<string>.Success(coinName);
         }
 
         public async Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsBySymbol(
@@ -66,22 +55,21 @@ namespace TradingApp.Application.Repositories.CoinRepository
             var coin = await _http.GetFromJsonAsync<CoinDto>(baseApiAddress + $"?symbol={coinSymbol}");
             if (coin is null)
             {
-                return RequestResult<CoinDto>.Failure(Error.ErrorUnknown);
+                return RequestResult<CoinDto>.Failure(CoinError.ErrorFetchCoins);
             }
             return RequestResult<CoinDto>.Success(coin);
         }
 
-        public async Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsPerPage(int pageSize,
-            int page)
+        public async Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsPerPage(PaginationDto pagination)
         {
             var coinList = new List<CoinDto>();
-            var coins = _context.Set<Coin>().Take(pageSize).Skip((page - 1) * pageSize)
+            var coins = _context.Set<Coin>().Take(pagination.PageSize).Skip((pagination.Page - 1) * pagination.PageSize)
                 .Select(x => x.Symbol).ToList();
             var coinsBySymbol = await GetCoinsBySymbol(coins);
             var result = _mapper.Map<IEnumerable<CoinDto>>(coinsBySymbol.Result);
             if (result is null)
             {
-                return RequestResult<IEnumerable<CoinDto>>.Failure(Error.ErrorUnknown);
+                return RequestResult<IEnumerable<CoinDto>>.Failure(CoinError.ErrorFetchCoins);
             }
             return RequestResult<IEnumerable<CoinDto>>.Success(result);
         }

@@ -300,6 +300,9 @@ namespace TradingApp.Database.Migrations
                     b.Property<float>("MoneyInput")
                         .HasColumnType("real");
 
+                    b.Property<float>("SellingPrice")
+                        .HasColumnType("real");
+
                     b.Property<float>("TransactionProfit")
                         .HasColumnType("real");
 
@@ -345,8 +348,6 @@ namespace TradingApp.Database.Migrations
                         .HasColumnType("real");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("FuturesPortfolioId");
 
                     b.ToTable("FuturesTransactionsToOpen");
                 });
@@ -438,6 +439,9 @@ namespace TradingApp.Database.Migrations
                     b.Property<float>("MoneyInput")
                         .HasColumnType("real");
 
+                    b.Property<float>("SellingPrice")
+                        .HasColumnType("real");
+
                     b.Property<int>("SpotPortfolioId")
                         .HasColumnType("int");
 
@@ -474,8 +478,6 @@ namespace TradingApp.Database.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("SpotPortfolioId");
 
                     b.ToTable("SpotTransactionsToOpen");
                 });
@@ -531,17 +533,6 @@ namespace TradingApp.Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TradingApp.Domain.Futures.FuturesTransactionToOpen", b =>
-                {
-                    b.HasOne("TradingApp.Domain.Futures.FuturesPortfolio", "FuturesPortfolio")
-                        .WithMany()
-                        .HasForeignKey("FuturesPortfolioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FuturesPortfolio");
-                });
-
             modelBuilder.Entity("TradingApp.Domain.Portfolio.Portfolio", b =>
                 {
                     b.HasOne("TradingApp.Domain.Futures.FuturesPortfolio", "FuturesPortfolio")
@@ -567,17 +558,6 @@ namespace TradingApp.Database.Migrations
                     b.Navigation("SpotPortfolio");
 
                     b.Navigation("TradingAppUser");
-                });
-
-            modelBuilder.Entity("TradingApp.Domain.Spot.SpotTransactionToOpen", b =>
-                {
-                    b.HasOne("TradingApp.Domain.Spot.SpotPortfolio", "SpotPortfolio")
-                        .WithMany()
-                        .HasForeignKey("SpotPortfolioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SpotPortfolio");
                 });
 #pragma warning restore 612, 618
         }

@@ -16,7 +16,5 @@ namespace TradingApp.Domain.Futures
         public float TakeProfitPrice { get; set; }
 
         public int FuturesPortfolioId { get; set; }
-
-        public FuturesPortfolio FuturesPortfolio { get; set; } = new FuturesPortfolio();
     }
 }

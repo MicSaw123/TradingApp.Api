@@ -9,5 +9,7 @@ namespace TradingApp.Domain.Futures
         public float ClosingPrice { get; set; }
 
         public float LiquidationPrice { get; set; }
+
+        public int FuturesPortfolioId { get; set; }
     }
 }

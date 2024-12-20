@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using System.Text.Json;
 using TradingApp.Application.DataTransferObjects.Coin;
+using TradingApp.Application.DataTransferObjects.PaginationDto;
 using TradingApp.Application.Repositories.CoinRepository;
 using TradingApp.Application.Services.Interfaces.Database;
 using TradingApp.Domain.Coins;
@@ -14,22 +15,11 @@ namespace TradingApp.Application.Services.CoinService
         private readonly IDbContext _context;
         private readonly IMapper _mapper;
 
-        public CoinService(ICoinRepository coinRepository,
-            IDbContext context, IMapper mapper)
+        public CoinService(ICoinRepository coinRepository, IDbContext context, IMapper mapper)
         {
             _coinRepository = coinRepository;
             _context = context;
             _mapper = mapper;
-        }
-
-        public async Task<RequestResult<string>> GetCoinNameById(int coinId)
-        {
-            var result = await _coinRepository.GetCoinNameById(coinId);
-            if (result is null)
-            {
-                return RequestResult<string>.Failure(Error.ErrorUnknown);
-            }
-            return RequestResult<string>.Success(result.Result);
         }
 
         public async Task<RequestResult<IEnumerable<CoinDto>>> GetCoins()
@@ -54,19 +44,16 @@ namespace TradingApp.Application.Services.CoinService
             return RequestResult<IEnumerable<CoinDto>>.Success(cl);
         }
 
-
-
         public async Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsBySymbol(List<string> symbols)
         {
             var coins = await _coinRepository.GetCoinsBySymbol(symbols);
             return RequestResult<IEnumerable<CoinDto>>.Success(coins.Result);
         }
 
-        public async Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsPerPage(int pageSize,
-            int page)
+        public async Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsPerPage(PaginationDto paginationDto)
         {
             var coinPage = await GetCoins();
-            var x = coinPage.Result.Skip((page - 1) * pageSize).Take(pageSize);
+            var x = coinPage.Result.Skip((paginationDto.Page - 1) * paginationDto.PageSize).Take(paginationDto.PageSize);
             if (x is not null)
             {
                 return RequestResult<IEnumerable<CoinDto>>.Success(x);

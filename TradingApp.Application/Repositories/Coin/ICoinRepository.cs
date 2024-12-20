@@ -1,4 +1,5 @@
 ﻿using TradingApp.Application.DataTransferObjects.Coin;
+using TradingApp.Application.DataTransferObjects.PaginationDto;
 
 namespace TradingApp.Application.Repositories.CoinRepository
 {
@@ -8,8 +9,8 @@ namespace TradingApp.Application.Repositories.CoinRepository
 
         Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsBySymbol(List<string> symbols);
 
-        Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsPerPage(int pageSize, int page);
+        Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsPerPage(PaginationDto pagination);
 
-        Task<RequestResult<string>> GetCoinNameById(int coinId);
+        Task<RequestResult<CoinDto>> GetCoinBySymbol(string symbol);
     }
 }

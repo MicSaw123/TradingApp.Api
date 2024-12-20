@@ -2,7 +2,7 @@
 
 namespace TradingApp.Domain.Errors.TransactionToOpenErrors
 {
-    public abstract class TransactionToOpenError(string Name, int StatusCode, string? Description = null)
+    public abstract class TransactionToOpenError
     {
         public static readonly Error ErrorAddTransactionToOpen = new AddTransactionToOpenError();
 

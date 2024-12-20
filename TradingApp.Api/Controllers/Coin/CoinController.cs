@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TradingApp.Api.Controllers.Base;
+using TradingApp.Application.DataTransferObjects.PaginationDto;
 using TradingApp.Application.Services.CoinService;
 
 namespace TradingApp.Api.Controllers.Coin
@@ -14,17 +16,11 @@ namespace TradingApp.Api.Controllers.Coin
         {
             _coinService = coinService;
         }
-
+        [Authorize]
         [HttpGet("GetCoins")]
         public async Task<IActionResult> GetCoins()
         {
             return CreateResponse(await _coinService.GetCoins());
-        }
-
-        [HttpGet("GetCoinNameById")]
-        public async Task<IActionResult> GetCoinNameById(int coinId)
-        {
-            return CreateResponse(await _coinService.GetCoinNameById(coinId));
         }
 
         [HttpPost("GetCoinsBySymbol")]
@@ -39,10 +35,10 @@ namespace TradingApp.Api.Controllers.Coin
             return CreateResponse(await _coinService.SeedCoins(cancellation));
         }
 
-        [HttpGet("GetCoinsPerPage")]
-        public async Task<IActionResult> GetCoinsPerPage(int pageSize, int page)
+        [HttpPost("GetCoinsPerPage")]
+        public async Task<IActionResult> GetCoinsPerPage([FromBody] PaginationDto paginationDto)
         {
-            return CreateResponse(await _coinService.GetCoinsPerPage(pageSize, page));
+            return CreateResponse(await _coinService.GetCoinsPerPage(paginationDto));
         }
     }
 }

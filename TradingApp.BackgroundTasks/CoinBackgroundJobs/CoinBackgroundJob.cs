@@ -2,10 +2,10 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TradingApp.Application.DataTransferObjects.ConnectionId;
 using TradingApp.Application.DataTransferObjects.PaginationDto;
 using TradingApp.Application.Realtime;
 using TradingApp.Application.Services.CoinService;
+using TradingApp.Application.Services.ConnectionManager;
 
 namespace TradingApp.BackgroundTasks.CoinBackgroundJobs
 {
@@ -13,16 +13,16 @@ namespace TradingApp.BackgroundTasks.CoinBackgroundJobs
     {
         private readonly IHubContext<CoinListHub, ICoinListHub> _hubContext;
         private readonly IMemoryCache _memoryCache;
-        private readonly ConnectionIdDto _connectionIdDto;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IConnectionManager _connectionManager;
 
         public CoinBackgroundJob(IHubContext<CoinListHub, ICoinListHub> hubContext,
-            IMemoryCache memoryCache, ConnectionIdDto connectionIdDto, IServiceProvider serviceProvider)
+            IMemoryCache memoryCache, IServiceProvider serviceProvider, IConnectionManager connectionManager)
         {
             _hubContext = hubContext;
             _memoryCache = memoryCache;
-            _connectionIdDto = connectionIdDto;
             _serviceProvider = serviceProvider;
+            _connectionManager = connectionManager;
         }
 
         public override async Task StopAsync(CancellationToken cancellation)
@@ -34,20 +34,24 @@ namespace TradingApp.BackgroundTasks.CoinBackgroundJobs
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var connectionId = _connectionIdDto.GetConnectionId();
-                var pageInfo = (PaginationDto)_memoryCache.Get(connectionId)!;
-
-                if (pageInfo != null)
+                var connectionList = await _connectionManager.GetAllConnections();
+                foreach (var connection in connectionList)
                 {
+                    var userId = _memoryCache.Get(connection);
+                    var pageInfo = (PaginationDto)_memoryCache.Get(userId);
+                    if (pageInfo is null)
+                    {
+                        continue;
+                    }
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var coinService = scope.ServiceProvider.GetService<ICoinService>();
-                        var coins = await coinService!.GetCoinsPerPage(pageInfo.PageSize, pageInfo.Page);
+                        var coins = await coinService!.GetCoinsPerPage(pageInfo);
                         var coinList = coins.Result.ToList();
-                        await _hubContext.Clients.All.GetCoinsPerPage(coinList);
+                        await _hubContext.Clients.Client(connection).GetCoinsPerPage(coinList);
                     }
                 }
-                await Task.Delay(20000);
+                await Task.Delay(5000);
             }
         }
     }

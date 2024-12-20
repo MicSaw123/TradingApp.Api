@@ -10,6 +10,8 @@
 
         public string CoinSymbol { get; set; } = string.Empty;
 
+        public float SellingPrice { get; set; }
+
         public int SpotPortfolioId { get; set; }
     }
 }

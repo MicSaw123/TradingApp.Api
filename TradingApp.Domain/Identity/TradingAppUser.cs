@@ -4,6 +4,5 @@ namespace TradingApp.Database.TradingAppUsers
 {
     public class TradingAppUser : IdentityUser
     {
-
     }
 }

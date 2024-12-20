@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Http.Json;
-using TradingApp.Application.DataTransferObjects.Coin;
 using TradingApp.Application.DataTransferObjects.Transaction;
+using TradingApp.Application.Repositories.CoinRepository;
 using TradingApp.Application.Repositories.DbTransactionRepository;
 using TradingApp.Application.Repositories.SpotPortfolioRepository;
 using TradingApp.Application.Services.Interfaces.Database;
-using TradingApp.Domain.Errors;
+using TradingApp.Domain.Errors.Errors.TransactionErrors;
 using TradingApp.Domain.Spot;
 
 namespace TradingApp.Application.Repositories.SpotTransactionRepository
@@ -16,19 +15,18 @@ namespace TradingApp.Application.Repositories.SpotTransactionRepository
         private readonly IDbContext _context;
         private readonly IMapper _mapper;
         private readonly ISpotPortfolioRepository _spotPortfolioRepository;
-        private readonly HttpClient _http;
         private readonly IDbTransactionRepository _dbTransaction;
-        private readonly string baseApiAddress = "https://api.binance.com/api/v3/ticker/price?symbol=";
+        private readonly ICoinRepository _coinRepository;
 
         public SpotTransactionRepository(IDbContext context, IMapper mapper,
-            ISpotPortfolioRepository spotPortfolioRepository, HttpClient http,
-            IDbTransactionRepository dbTransaction)
+            ISpotPortfolioRepository spotPortfolioRepository,
+            IDbTransactionRepository dbTransaction, ICoinRepository coinRepository)
         {
             _context = context;
             _mapper = mapper;
             _spotPortfolioRepository = spotPortfolioRepository;
-            _http = http;
             _dbTransaction = dbTransaction;
+            _coinRepository = coinRepository;
         }
 
         public async Task<RequestResult> CalculateSpotTransactionProfit
@@ -42,9 +40,8 @@ namespace TradingApp.Application.Repositories.SpotTransactionRepository
                 foreach (var transaction in spotTransactions)
                 {
 
-                    var coin = await _http.
-                        GetFromJsonAsync<CoinDto>(baseApiAddress + transaction.CoinSymbol);
-                    transaction.TransactionProfit = transaction.AmountOfCoin * coin.Price
+                    var coin = await _coinRepository.GetCoinBySymbol(transaction.CoinSymbol);
+                    transaction.TransactionProfit = transaction.AmountOfCoin * coin.Result.Price
                         - transaction.MoneyInput;
                     spotPortfolio.Balance += transaction.TransactionProfit;
                     spotPortfolio.DailyProfit += transaction.TransactionProfit;
@@ -60,7 +57,7 @@ namespace TradingApp.Application.Repositories.SpotTransactionRepository
                     catch (Exception ex)
                     {
                         dbTransaction.Rollback();
-                        return RequestResult.Failure(Error.ErrorUnknown);
+                        return RequestResult.Failure(TransactionError.ErrorCalculateTransactionProfits);
                     }
                 }
             }
@@ -72,16 +69,15 @@ namespace TradingApp.Application.Repositories.SpotTransactionRepository
             var transactions = _context.Set<SpotTransaction>().Where(x => x.SellingPrice != 0);
             foreach (var transaction in transactions)
             {
-                var coin = await _http.GetFromJsonAsync<CoinDto>(baseApiAddress +
-                    transaction.CoinSymbol);
-                if (transaction.SellingPrice >= coin?.Price)
+                var coin = await _coinRepository.GetCoinBySymbol(transaction.CoinSymbol);
+                if (transaction.SellingPrice >= coin.Result.Price)
                 {
                     using var dbTransaction = _dbTransaction.BeginTransaction();
                     try
                     {
                         transaction.isActive = false;
                         transaction.TransactionProfit =
-                            transaction.AmountOfCoin * coin.Price - transaction.MoneyInput;
+                            transaction.AmountOfCoin * coin.Result.Price - transaction.MoneyInput;
                         var spotPortfolioDto = await
                             _spotPortfolioRepository.GetSpotPortfolioById(transaction.SpotPortfolioId);
                         var spotPortfolio = _mapper.Map<SpotPortfolio>(spotPortfolioDto.Result);
@@ -94,7 +90,7 @@ namespace TradingApp.Application.Repositories.SpotTransactionRepository
                     catch (Exception ex)
                     {
                         dbTransaction.Rollback();
-                        return RequestResult.Failure(Error.ErrorUnknown);
+                        return RequestResult.Failure(TransactionError.ErrorCloseTransaction);
                     }
                 }
             }
@@ -109,9 +105,8 @@ namespace TradingApp.Application.Repositories.SpotTransactionRepository
                 .SingleOrDefaultAsync(x => x.Id == spotTransaction.Id);
             if (transaction is not null && transaction.isActive is true)
             {
-                var coin = await _http.GetFromJsonAsync<CoinDto>(baseApiAddress +
-                    transaction.CoinSymbol);
-                transaction.SellingPrice = coin.Price;
+                var coin = await _coinRepository.GetCoinBySymbol(transaction.CoinSymbol);
+                transaction.SellingPrice = coin.Result.Price;
                 transaction.TransactionProfit =
                     transaction.SellingPrice * transaction.AmountOfCoin - transaction.MoneyInput;
                 transaction.isActive = false;
@@ -132,7 +127,7 @@ namespace TradingApp.Application.Repositories.SpotTransactionRepository
                 catch (Exception ex)
                 {
                     dbTransaction.Rollback();
-                    return RequestResult.Failure(Error.ErrorUnknown);
+                    return RequestResult.Failure(TransactionError.ErrorCloseTransaction);
                 }
 
             }
@@ -153,7 +148,7 @@ namespace TradingApp.Application.Repositories.SpotTransactionRepository
             catch (Exception ex)
             {
                 dbTransaction.Rollback();
-                return RequestResult.Failure(Error.ErrorUnknown);
+                return RequestResult.Failure(TransactionError.ErrorEditTransaction);
             }
             return RequestResult.Success();
         }

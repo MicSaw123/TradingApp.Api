@@ -1,57 +1,124 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using TradingApp.Application.Repositories.DbTransactionRepository;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using TradingApp.Application.DataTransferObjects.Identity;
 using TradingApp.Application.Services.Interfaces.Database;
 using TradingApp.Database.TradingAppUsers;
+using TradingApp.Domain.Errors;
+using TradingApp.Domain.Errors.Errors.IdentityErrors;
 using TradingApp.Domain.Futures;
-using TradingApp.Domain.Portfolio;
 using TradingApp.Domain.Spot;
 
 namespace TradingApp.Application.Services.IdentityService
 {
-    public class IdentityService : UserManager<TradingAppUser>
+    public class IdentityService : IIdentityService
     {
+        private readonly UserManager<TradingAppUser> _userManager;
+        private readonly IConfiguration _configuration;
         private readonly IDbContext _context;
-        private readonly IDbTransactionRepository _dbTransactionRepository;
+        private readonly IMapper _mapper;
 
-        public IdentityService(IUserStore<TradingAppUser> store, IOptions<IdentityOptions> optionsAccessor,
-        IPasswordHasher<TradingAppUser> passwordHasher, IEnumerable<IUserValidator<TradingAppUser>> userValidators,
-        IEnumerable<IPasswordValidator<TradingAppUser>> passwordValidators, ILookupNormalizer keyNormalizer,
-        IdentityErrorDescriber errors, IServiceProvider services, ILogger<UserManager<TradingAppUser>> logger, IDbContext context,
-        IDbTransactionRepository dbTransactionRepository) : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
+        public IdentityService(UserManager<TradingAppUser> userManager,
+            IConfiguration configuration, IDbContext context, IMapper mapper)
         {
+            _userManager = userManager;
+            _configuration = configuration;
             _context = context;
-            _dbTransactionRepository = dbTransactionRepository;
+            _mapper = mapper;
         }
 
-        public override async Task<IdentityResult> CreateAsync(TradingAppUser user)
+        public async Task<RequestResult<UserInfoDto>> GetUserInfo(string id)
+        {
+            var user = await _context.Set<TradingAppUser>().FirstOrDefaultAsync(x => x.Id == id);
+            var userDto = _mapper.Map<UserInfoDto>(user);
+            if (user is null)
+            {
+                return RequestResult<UserInfoDto>.Failure(Error.ErrorUnknown);
+            }
+            return RequestResult<UserInfoDto>.Success(userDto);
+        }
+
+        public async Task<RequestResult<LoginResponseDto>> Login(LoginDto loginDto)
+        {
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            if (user is null)
+            {
+                return RequestResult<LoginResponseDto>.Failure(IdentityErrors.UserDoesNotExist);
+            }
+            var passwordCorrect = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+            if (!passwordCorrect)
+            {
+                return RequestResult<LoginResponseDto>.Failure(IdentityErrors.WrongPassword);
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var authClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim("id", user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+            foreach (var userRole in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+            var token = GetToken(authClaims);
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            var loginResponse = new LoginResponseDto
+            {
+                Token = tokenString
+            };
+            return RequestResult<LoginResponseDto>.Success(loginResponse);
+        }
+
+        public async Task<RequestResult> Register(RegisterDto registerDto)
         {
             CancellationToken cancellation = default;
-            var portfolio = new Portfolio();
-            var spotPortfolio = new SpotPortfolio();
-            var futuresPortfolio = new FuturesPortfolio();
-            await base.CreateAsync(user);
-            using var transaction = _dbTransactionRepository.BeginTransaction();
-            try
+            var emailExists = await _userManager.FindByEmailAsync(registerDto.Email);
+            if (emailExists != null)
             {
-                await _context.Set<SpotPortfolio>().AddAsync(spotPortfolio);
-                await _context.SaveChangesAsync(cancellation);
-                await _context.Set<FuturesPortfolio>().AddAsync(futuresPortfolio);
-                await _context.SaveChangesAsync(cancellation);
-                portfolio.FuturesPortfolioId = futuresPortfolio.Id;
-                portfolio.SpotPortfolioId = spotPortfolio.Id;
-                portfolio.TradingAppUserId = user.Id;
-                await _context.Set<Portfolio>().AddAsync(portfolio);
-                await _context.SaveChangesAsync(cancellation);
-                transaction.Commit();
+                return IdentityErrors.EmailAlreadyTaken;
             }
-            catch (Exception ex)
+            TradingAppUser user = new()
             {
-                transaction.Rollback();
-                throw;
+                UserName = registerDto.Email,
+                Email = registerDto.Email,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                PhoneNumber = registerDto.PhoneNumber,
+            };
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
+            if (!result.Succeeded)
+            {
+                return IdentityErrors.AccountCreationError;
             }
-            return IdentityResult.Success;
+            _context.Set<SpotPortfolio>().Add(new SpotPortfolio { });
+            await _context.SaveChangesAsync(cancellation);
+            _context.Set<FuturesPortfolio>().Add(new FuturesPortfolio { });
+            await _context.SaveChangesAsync(cancellation);
+            return RequestResult.Success();
+        }
+
+
+        private JwtSecurityToken GetToken(List<Claim> authClaims)
+        {
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
+                expires: DateTime.UtcNow.AddHours(3),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+                );
+
+            return token;
         }
     }
 }

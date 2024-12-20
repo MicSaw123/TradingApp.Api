@@ -2,11 +2,11 @@
 {
     public class TransactionDto
     {
+        public string CoinSymbol { get; set; } = string.Empty;
+
         public float BuyingPrice { get; set; }
 
-        public int CoinId { get; set; }
-
-        public float SellingPrice { get; set; }
+        public float MoneyInput { get; set; }
 
         public bool isActive { get; set; }
 

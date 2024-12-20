@@ -1,35 +1,36 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Http.Json;
-using TradingApp.Application.DataTransferObjects.Coin;
 using TradingApp.Application.DataTransferObjects.Spot;
+using TradingApp.Application.Repositories.CoinRepository;
 using TradingApp.Application.Repositories.DbTransactionRepository;
 using TradingApp.Application.Repositories.SpotPortfolioRepository;
+using TradingApp.Application.Repositories.SpotTransactionToAdd;
 using TradingApp.Application.Services.Interfaces.Database;
 using TradingApp.Domain.Errors.TransactionToOpenErrors;
 using TradingApp.Domain.Spot;
 
-namespace TradingApp.Application.Repositories.SpotTransactionToAdd
+namespace TradingApp.Application.Repositories.SpotTransactionsToOpen
 {
     public class SpotTransactionToOpenRepository : ISpotTransactionToOpenRepository
     {
         private readonly IDbContext _context;
-        private readonly HttpClient _http;
         private readonly IMapper _mapper;
         private readonly IDbTransactionRepository _dbTransaction;
         private readonly ISpotPortfolioRepository _spotPortfolioRepository;
-        private string baseApiAddress = "https://api.binance.com/api/v3/ticker/price?symbol=";
+        private readonly ICoinRepository _coinRepository;
 
-        public SpotTransactionToOpenRepository(IDbContext context, HttpClient http,
+        public SpotTransactionToOpenRepository(IDbContext context,
             IMapper mapper, IDbTransactionRepository dbTransaction,
-            ISpotPortfolioRepository spotPortfolioRepository)
+            ISpotPortfolioRepository spotPortfolioRepository, ICoinRepository coinRepository)
         {
             _context = context;
-            _http = http;
             _mapper = mapper;
             _dbTransaction = dbTransaction;
             _spotPortfolioRepository = spotPortfolioRepository;
+            _coinRepository = coinRepository;
         }
+
+        public ICoinRepository CoinRepository { get; }
 
         public async Task<RequestResult> AddAwaitingTransactionToSpotPortfolio
             (SpotTransactionToOpenDto spotTransactionToOpen,
@@ -89,13 +90,15 @@ namespace TradingApp.Application.Repositories.SpotTransactionToAdd
                     if (transaction.MoneyInput < spotTransactionToOpenDto.MoneyInput)
                     {
                         await _spotPortfolioRepository.
-                            SubtractBalance(transaction.SpotPortfolioId, spotTransactionToOpen.MoneyInput - transaction.MoneyInput
+                            SubtractBalance(transaction.SpotPortfolioId,
+                            spotTransactionToOpen.MoneyInput - transaction.MoneyInput
                             , cancellation);
                     }
                     else
                     {
                         await _spotPortfolioRepository
-                            .AddBalance(transaction.SpotPortfolioId, transaction.MoneyInput - spotTransactionToOpen.MoneyInput, cancellation);
+                            .AddBalance(transaction.SpotPortfolioId,
+                            transaction.MoneyInput - spotTransactionToOpen.MoneyInput, cancellation);
                     }
                 }
                 _context.Set<SpotTransactionToOpen>().Update(spotTransactionToOpen);
@@ -116,17 +119,16 @@ namespace TradingApp.Application.Repositories.SpotTransactionToAdd
             var spotTransactionsToOpen = _context.Set<SpotTransactionToOpen>().ToList();
             foreach (var transaction in spotTransactionsToOpen)
             {
-                var coin = await _http.GetFromJsonAsync<CoinDto>
-                    (baseApiAddress + transaction.CoinSymbol);
+                var coin = await _coinRepository.GetCoinBySymbol(transaction.CoinSymbol);
                 using var dbTransaction = _dbTransaction.BeginTransaction();
                 try
                 {
-                    if (transaction.BuyingPrice >= coin?.Price)
+                    if (transaction.BuyingPrice <= coin.Result.Price)
                     {
                         var spotTransaction = _mapper.Map<SpotTransaction>(transaction);
-                        spotTransaction.AmountOfCoin = spotTransaction.MoneyInput / coin.Price;
+                        spotTransaction.AmountOfCoin = spotTransaction.MoneyInput / coin.Result.Price;
                         spotTransaction.isActive = true;
-                        spotTransaction.BuyingPrice = coin.Price;
+                        spotTransaction.BuyingPrice = coin.Result.Price;
                         _context.Set<SpotTransaction>().Add(spotTransaction);
                         await _context.SaveChangesAsync(cancellation);
                         _context.Set<SpotTransactionToOpen>().Remove(transaction);

@@ -31,15 +31,15 @@ namespace TradingApp.Application.Services.SpotTransactionToOpenService
             return result;
         }
 
-        public async Task<RequestResult> EditAwaitingSpotTransaction(SpotTransactionToOpenDto spotTransactionToOpenDto, CancellationToken cancellation)
+        public async Task<RequestResult> EditAwaitingSpotTransaction(SpotTransactionToOpenDto spotTransactionToOpenDto,
+            CancellationToken cancellation)
         {
             var result = await _spotTransactionToOpenRepository.EditAwaitingSpotTransaction
                 (spotTransactionToOpenDto, cancellation);
             return result;
         }
 
-        public async Task<RequestResult> OpenWaitingSpotTransaction
-            (CancellationToken cancellation = default)
+        public async Task<RequestResult> OpenWaitingSpotTransaction(CancellationToken cancellation = default)
         {
             var result = await _spotTransactionToOpenRepository.
                 OpenWaitingSpotTransaction(cancellation);

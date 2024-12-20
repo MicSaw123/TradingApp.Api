@@ -1,25 +1,35 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 using TradingApp.Application.DataTransferObjects.Coin;
-using TradingApp.Application.DataTransferObjects.ConnectionId;
 using TradingApp.Application.DataTransferObjects.PaginationDto;
+using TradingApp.Application.Services.ConnectionManager;
 
 namespace TradingApp.Application.Realtime
 {
     public class CoinListHub : Hub<ICoinListHub>
     {
         private readonly IMemoryCache _memoryCache;
-        private readonly ConnectionIdDto _connectionId;
+        private readonly IConnectionManager _connectionManager;
 
-        public CoinListHub(IMemoryCache memoryCache, ConnectionIdDto connectionId)
+        public CoinListHub(IMemoryCache memoryCache, IConnectionManager connectionManager)
         {
+
             _memoryCache = memoryCache;
-            _connectionId = connectionId;
+            _connectionManager = connectionManager;
         }
 
-        public async Task GetPaginationParameters(int pageSize, int page)
+        public async Task GetPaginationParameters(PaginationDto paginationDto)
         {
-            _memoryCache.Set(_connectionId.GetConnectionId(), (pageSize, page), TimeSpan.FromSeconds(10));
+            var connectionList = _connectionManager.GetAllConnections().Result;
+            foreach (var connection in connectionList)
+            {
+                var userId = _memoryCache.Get(connection);
+                if (userId is null)
+                {
+                    continue;
+                }
+                _memoryCache.Set(userId, paginationDto);
+            }
         }
 
         public async Task GetCoinsPerPage(List<CoinDto> coins)
@@ -29,12 +39,10 @@ namespace TradingApp.Application.Realtime
 
         public override async Task OnConnectedAsync()
         {
-            _connectionId.SetConnectionId(Context.ConnectionId);
-            _memoryCache.Set(_connectionId.GetConnectionId(), new PaginationDto
-            {
-                Page = 1,
-                PageSize = 15,
-            }, TimeSpan.FromSeconds(10));
+            _connectionManager.AddConnectionIdToList(Context.ConnectionId);
+            var httpContext = Context.GetHttpContext();
+            var userId = httpContext.Request.Query["userId"];
+            _memoryCache.Set(Context.ConnectionId, userId);
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)

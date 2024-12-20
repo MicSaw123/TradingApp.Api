@@ -1,4 +1,5 @@
 ﻿using TradingApp.Application.DataTransferObjects.Coin;
+using TradingApp.Application.DataTransferObjects.PaginationDto;
 
 namespace TradingApp.Application.Services.CoinService
 {
@@ -8,11 +9,8 @@ namespace TradingApp.Application.Services.CoinService
 
         public Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsBySymbol(List<string> symbols);
 
-        public Task<RequestResult<string>> GetCoinNameById(int coinId);
-
         public Task<RequestResult> SeedCoins(CancellationToken cancellation);
 
-        public Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsPerPage(int pageSize,
-            int page);
+        public Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsPerPage(PaginationDto paginationDto);
     }
 }
