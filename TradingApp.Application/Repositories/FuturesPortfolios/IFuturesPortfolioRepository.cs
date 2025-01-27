@@ -1,9 +1,18 @@
-﻿namespace TradingApp.Application.Repositories.FuturesPortfolios
+﻿using TradingApp.Domain.Futures;
+
+namespace TradingApp.Application.Repositories.FuturesPortfolios
 {
     public interface IFuturesPortfolioRepository
     {
-        Task<RequestResult> AddBalance(int portfolioId, float balanceToAdd, CancellationToken cancellation);
+        Task<List<FuturesPortfolio>> GetFuturesPortfolios();
 
-        Task<RequestResult> SubtractBalance(int portfolioId, float balanceToSubtract, CancellationToken cancellation);
+        Task<FuturesPortfolio> GetFuturesPortfolioById(int id);
+
+        Task UpdateFuturesPortfolio(FuturesPortfolio portfolio, CancellationToken cancellation);
+
+        Task UpdateFuturesPortfolios(List<FuturesPortfolio> futuresTransactions,
+            CancellationToken cancellation);
+
+        Task AddFuturesPortfolio(FuturesPortfolio futuresPortfolio, CancellationToken cancellation);
     }
 }

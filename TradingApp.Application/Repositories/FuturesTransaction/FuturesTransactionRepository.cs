@@ -1,11 +1,5 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using TradingApp.Application.DataTransferObjects.Transaction;
-using TradingApp.Application.Repositories.CoinRepository;
-using TradingApp.Application.Repositories.DbTransactionRepository;
-using TradingApp.Application.Repositories.FuturesPortfolios;
+﻿using Microsoft.EntityFrameworkCore;
 using TradingApp.Application.Services.Interfaces.Database;
-using TradingApp.Domain.Errors.Errors.TransactionErrors;
 using TradingApp.Domain.Futures;
 
 namespace TradingApp.Application.Repositories.TransactionRepository.FuturesTransactionRepository
@@ -13,55 +7,36 @@ namespace TradingApp.Application.Repositories.TransactionRepository.FuturesTrans
     public class FuturesTransactionRepository : IFuturesTransactionRepository
     {
         private readonly IDbContext _context;
-        private readonly IMapper _mapper;
-        private readonly IDbTransactionRepository _dbTransaction;
-        private readonly IFuturesPortfolioRepository _futuresPortfolioRepository;
-        private readonly ICoinRepository _coinRepository;
 
-        public FuturesTransactionRepository(IDbContext context, IMapper mapper, IDbTransactionRepository dbTransaction,
-            IFuturesPortfolioRepository futuresPortfolioRepository, ICoinRepository coinRepository)
+        public FuturesTransactionRepository(IDbContext context)
         {
             _context = context;
-            _mapper = mapper;
-            _dbTransaction = dbTransaction;
-            _futuresPortfolioRepository = futuresPortfolioRepository;
-            _coinRepository = coinRepository;
         }
 
-        public async Task<RequestResult> CalculateTransactionsProfits(CancellationToken cancellation)
+        /*public async Task<RequestResult> CalculateTransactionsProfits(CancellationToken cancellation)
         {
-            var futuresTransactions = _context.Set<FuturesTransaction>().ToList();
-            foreach (var futuresTransaction in futuresTransactions)
+            var futuresPortfolios = await _futuresPortfolioRepository.GetFuturesPortfolios();
+            foreach (var futuresPortfolio in futuresPortfolios)
             {
-                using var dbTransaction = _dbTransaction.BeginTransaction();
-                try
+                float totalPortfolioProfit = 0;
+                var futuresTransactionDtos = await GetActiveFuturesTransactionByPortfolioId(futuresPortfolio.Id, cancellation);
+                var futuresTransactions = _mapper.Map<List<FuturesTransaction>>(futuresTransactionDtos);
+                foreach (var futuresTransaction in futuresTransactions)
                 {
                     var coin = await _coinRepository.GetCoinBySymbol(futuresTransaction.CoinSymbol);
-                    futuresTransaction.TransactionProfit =
-                        (futuresTransaction.AmountOfCoin * coin.Result.Price) - futuresTransaction.MoneyInput;
-                    if (futuresTransaction.TransactionProfit < 0)
-                    {
-                        await _futuresPortfolioRepository.SubtractBalance(futuresTransaction.FuturesPortfolioId,
-                            futuresTransaction.TransactionProfit, cancellation);
-                    }
-                    else if (futuresTransaction.TransactionProfit > 0)
-                    {
-                        await _futuresPortfolioRepository.AddBalance(futuresTransaction.FuturesPortfolioId,
-                            futuresTransaction.TransactionProfit, cancellation);
-                    }
-                    _context.Set<FuturesTransaction>().Update(futuresTransaction);
-                    await _context.SaveChangesAsync(cancellation);
-                    dbTransaction.Commit();
+                    futuresTransaction.TransactionProfit += (futuresTransaction.AmountOfCoin * coin.Result.Price)
+                        - (futuresTransaction.AmountOfCoin * futuresTransaction.BuyingPrice);
+                    totalPortfolioProfit += futuresTransaction.TransactionProfit;
                 }
-                catch (Exception ex)
-                {
-                    dbTransaction.Rollback();
-                }
+                futuresPortfolio.DailyProfit += totalPortfolioProfit;
+                futuresPortfolio.WeeklyProfit += totalPortfolioProfit;
+                futuresPortfolio.MonthlyProfit += totalPortfolioProfit;
+                await UpdateFuturesTransactions(futuresTransactions, cancellation);
             }
+            await _futuresPortfolioRepository.UpdateFuturesPortfolios(futuresPortfolios, cancellation);
             return RequestResult.Success();
-        }
-
-        public async Task<RequestResult> CloseFuturesTransaction(int id, int portfolioId, CancellationToken cancellation)
+        }*/
+        /*public async Task<RequestResult> CloseFuturesTransaction(int id, int portfolioId, CancellationToken cancellation)
         {
             var transactionToClose = await _context.Set<FuturesTransaction>()
                 .FirstOrDefaultAsync(x => x.Id == id && x.FuturesPortfolioId == portfolioId);
@@ -76,7 +51,7 @@ namespace TradingApp.Application.Repositories.TransactionRepository.FuturesTrans
                     await _futuresPortfolioRepository
                         .AddBalance(transactionToClose.FuturesPortfolioId,
                         transactionToClose.TransactionProfit + transactionToClose.MoneyInput, cancellation);
-                    transactionToClose.isActive = false;
+                    transactionToClose.IsActive = false;
                     _context.Set<FuturesTransaction>().Update(transactionToClose);
                     await _context.SaveChangesAsync(cancellation);
                     dbTransaction.Commit();
@@ -88,33 +63,40 @@ namespace TradingApp.Application.Repositories.TransactionRepository.FuturesTrans
                 }
             }
             return RequestResult.Success();
+        }*/
+
+
+        public async Task UpdateFuturesTransaction(FuturesTransaction transaction, CancellationToken cancellation)
+        {
+            _context.Set<FuturesTransaction>().Update(transaction);
+            await _context.SaveChangesAsync(cancellation);
         }
 
-        public async Task<RequestResult> EditFuturesTransaction(FuturesTransactionDto futuresTransactionDto,
+        public async Task UpdateFuturesTransactionRange(List<FuturesTransaction> futuresTransactions,
             CancellationToken cancellation)
         {
-            var transactionToEdit = _mapper.Map<FuturesTransaction>(futuresTransactionDto);
-            if (transactionToEdit != null)
-            {
-                _context.Set<FuturesTransaction>().Update(transactionToEdit);
-                await _context.SaveChangesAsync(cancellation);
-                return RequestResult.Success();
-            }
-            return RequestResult.Failure(TransactionError.ErrorEditTransaction);
+            _context.Set<FuturesTransaction>().UpdateRange(futuresTransactions);
+            await _context.SaveChangesAsync(cancellation);
         }
 
-        public async Task<RequestResult<IEnumerable<FuturesTransactionDto>>>
-            GetFuturesTransactionByPortfolioId(int portfolioId, CancellationToken cancellation)
+        public async Task<IEnumerable<FuturesTransaction>> GetActiveFuturesTransactionsByPortfolioId(int portfolioId)
         {
-            var transactions = _context.Set<FuturesTransaction>().Where(x => x.FuturesPortfolioId == portfolioId)
-                .AsEnumerable();
-            var transactionDtos = _mapper.Map<IEnumerable<FuturesTransactionDto>>(transactions);
-            if (transactions is null)
-            {
-                return RequestResult<IEnumerable<FuturesTransactionDto>>
-                    .Failure(TransactionError.ErrorGetTransactionsByPortfolioId);
-            }
-            return RequestResult<IEnumerable<FuturesTransactionDto>>.Success(transactionDtos);
+            var futuresTransactions = _context.Set<FuturesTransaction>().Where(x => x.FuturesPortfolioId == portfolioId
+            && x.IsActive == true);
+            return futuresTransactions;
         }
+
+        public async Task<FuturesTransaction> GetActiveFuturesTransactionById(int id)
+        {
+            var futuresTransaction = await _context.Set<FuturesTransaction>().FirstOrDefaultAsync(x => x.Id == id && x.IsActive == true);
+            return futuresTransaction;
+        }
+
+        public async Task AddFuturesTransaction(FuturesTransaction futuresTransaction, CancellationToken cancellation)
+        {
+            await _context.Set<FuturesTransaction>().AddAsync(futuresTransaction);
+            await _context.SaveChangesAsync(cancellation);
+        }
+
     }
 }

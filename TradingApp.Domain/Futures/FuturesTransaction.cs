@@ -11,5 +11,7 @@ namespace TradingApp.Domain.Futures
         public float LiquidationPrice { get; set; }
 
         public int FuturesPortfolioId { get; set; }
+
+        public bool IsShort { get; set; }
     }
 }

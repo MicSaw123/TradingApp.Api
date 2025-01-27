@@ -7,7 +7,7 @@ namespace TradingApp.Application.Services.FuturesTransactionsService
         Task<RequestResult> CloseFuturesTransaction(int id, int portfolioId, CancellationToken cancellation);
 
         Task<RequestResult<IEnumerable<FuturesTransactionDto>>>
-            GetFuturesTransactionByPortfolioId(int portfolioId, CancellationToken cancellation);
+            GetFuturesTransactionsByPortfolioId(int portfolioId);
 
         Task<RequestResult> CalculateTransactionsProfits(CancellationToken cancellation);
 

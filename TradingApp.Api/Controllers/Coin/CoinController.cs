@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TradingApp.Api.Controllers.Base;
 using TradingApp.Application.DataTransferObjects.PaginationDto;
 using TradingApp.Application.Services.CoinService;
@@ -16,7 +15,6 @@ namespace TradingApp.Api.Controllers.Coin
         {
             _coinService = coinService;
         }
-        [Authorize]
         [HttpGet("GetCoins")]
         public async Task<IActionResult> GetCoins()
         {

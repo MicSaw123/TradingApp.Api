@@ -1,13 +1,13 @@
 ﻿using Quartz;
 using TradingApp.Application.Services.SpotTransactionService;
 
-namespace TradingApp.BackgroundTasks.SpotPortfolioBackgroundJobs
+namespace TradingApp.BackgroundTasks.SpotTransactionsJobs
 {
-    internal class CalculateSpotPortfolioProfit : IJob
+    internal class CalculateSpotTransactionProfits : IJob
     {
         private readonly ISpotTransactionService _spotTransactionService;
 
-        public CalculateSpotPortfolioProfit(ISpotTransactionService spotTransactionService)
+        public CalculateSpotTransactionProfits(ISpotTransactionService spotTransactionService)
         {
             _spotTransactionService = spotTransactionService;
         }

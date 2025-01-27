@@ -14,6 +14,12 @@ namespace TradingApp.Domain.Errors.Errors.SpotPortfolioErrors
 
         public static readonly Error ErrorCalculatePortfolioProfits = new CalculateProfitsError();
 
+        public static readonly Error ErrorRemoveProfits = new RemovePortfolioProfitsError();
+
+        public static readonly Error ErrorUpdatePortfolio = new UpdatePortfolioError();
+
+        public static readonly Error ErrorAddPortfolio = new AddPortfolioError();
+
         private sealed class PortfolioAddFundsError : Error
         {
             public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
@@ -56,6 +62,34 @@ namespace TradingApp.Domain.Errors.Errors.SpotPortfolioErrors
             public CalculateProfitsError() : base(nameof(ErrorCalculatePortfolioProfits), 3005)
             {
                 Message = "There was an error while calculating portfolio's profits";
+            }
+        }
+
+        private sealed class RemovePortfolioProfitsError : Error
+        {
+            public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
+            public RemovePortfolioProfitsError() : base(nameof(ErrorRemoveProfits), 3006)
+            {
+                Message = "There was an error while removing portfolio's profits!";
+            }
+        }
+
+        private sealed class UpdatePortfolioError : Error
+        {
+            public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
+            public UpdatePortfolioError() : base(nameof(ErrorUpdatePortfolio), 3007)
+            {
+                Message = "There was an error while updating portfolio!";
+            }
+        }
+
+        private sealed class AddPortfolioError : Error
+        {
+            public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
+
+            public AddPortfolioError() : base(nameof(ErrorAddPortfolio), 3008)
+            {
+                Message = "There was an error while adding portfolio!";
             }
         }
     }

@@ -17,10 +17,9 @@ namespace TradingApp.Api.Controllers.FuturesTransactions
         }
 
         [HttpGet("GetFuturesTransactionsByPortfolioId")]
-        public async Task<IActionResult> GetFuturesTransactionsByPortfolioId(int portfolioId,
-            CancellationToken cancellation = default)
+        public async Task<IActionResult> GetFuturesTransactionsByPortfolioId(int portfolioId)
         {
-            return CreateResponse(await _futuresTransactionService.GetFuturesTransactionByPortfolioId(portfolioId, cancellation));
+            return CreateResponse(await _futuresTransactionService.GetFuturesTransactionsByPortfolioId(portfolioId));
         }
 
         [HttpPut("CloseFuturesTransaction")]

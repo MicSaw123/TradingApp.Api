@@ -9,8 +9,7 @@ namespace TradingApp.Application.Services.SpotTransactionToOpenService
         Task<RequestResult> AddAwaitingTransactionToSpotPortfolio
     (SpotTransactionToOpenDto spotTransactionToOpen, CancellationToken cancellation = default);
 
-
-        Task<RequestResult> CancelAwaitingSpotTransaction(int id, int spotPortfolioId, CancellationToken cancellation);
+        Task<RequestResult> CancelAwaitingSpotTransaction(int id, CancellationToken cancellation);
 
         Task<RequestResult> EditAwaitingSpotTransaction(SpotTransactionToOpenDto spotTransactionToOpenDto,
             CancellationToken cancellation);

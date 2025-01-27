@@ -12,6 +12,10 @@ namespace TradingApp.Domain.Errors.Errors.TransactionErrors
 
         public static readonly Error ErrorEditTransaction = new EditTransactionError();
 
+        public static readonly Error ErrorLiquidateFuturesTransactions = new LiquidateFuturesTransactionsError();
+
+        public static readonly Error ErrorRemoveTransactionProfit = new RemoveTransactionProfitError();
+
         private class GetTransactionsByPortfolioIdError : Error
         {
             public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
@@ -48,6 +52,25 @@ namespace TradingApp.Domain.Errors.Errors.TransactionErrors
             public EditTransactionError() : base(nameof(ErrorEditTransaction), 904)
             {
                 Message = "There was an error while editing transaction. Try again later.";
+            }
+        }
+
+        private class LiquidateFuturesTransactionsError : Error
+        {
+            public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
+
+            public LiquidateFuturesTransactionsError() : base(nameof(ErrorLiquidateFuturesTransactions), 905)
+            {
+                Message = "There was an error while liquidating transactions for this portfolio";
+            }
+        }
+
+        private class RemoveTransactionProfitError : Error
+        {
+            public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
+            public RemoveTransactionProfitError() : base(nameof(ErrorRemoveTransactionProfit), 906)
+            {
+                Message = "There was an error while removing profit from portfolio!";
             }
         }
     }

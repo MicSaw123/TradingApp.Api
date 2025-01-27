@@ -7,12 +7,16 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TradingApp.Application.DataTransferObjects.Identity;
+using TradingApp.Application.Services.FuturesPortfoliosService;
 using TradingApp.Application.Services.Interfaces.Database;
+using TradingApp.Application.Services.PortfolioService;
+using TradingApp.Application.Services.SpotPortfolioService;
 using TradingApp.Database.TradingAppUsers;
 using TradingApp.Domain.Errors;
 using TradingApp.Domain.Errors.Errors.IdentityErrors;
 using TradingApp.Domain.Futures;
 using TradingApp.Domain.Spot;
+using TradingApp.Domain.SummaryPortfolio;
 
 namespace TradingApp.Application.Services.IdentityService
 {
@@ -22,14 +26,21 @@ namespace TradingApp.Application.Services.IdentityService
         private readonly IConfiguration _configuration;
         private readonly IDbContext _context;
         private readonly IMapper _mapper;
+        private readonly ISpotPortfolioService _spotPortfolioService;
+        private readonly IFuturesPortfolioService _futuresPortfolioService;
+        private readonly IPortfolioService _portfolioService;
 
         public IdentityService(UserManager<TradingAppUser> userManager,
-            IConfiguration configuration, IDbContext context, IMapper mapper)
+            IConfiguration configuration, IDbContext context, IMapper mapper, ISpotPortfolioService spotPortfolioService,
+            IFuturesPortfolioService futuresPortfolioService, IPortfolioService portfolioService)
         {
             _userManager = userManager;
             _configuration = configuration;
             _context = context;
             _mapper = mapper;
+            _spotPortfolioService = spotPortfolioService;
+            _futuresPortfolioService = futuresPortfolioService;
+            _portfolioService = portfolioService;
         }
 
         public async Task<RequestResult<UserInfoDto>> GetUserInfo(string id)
@@ -98,10 +109,38 @@ namespace TradingApp.Application.Services.IdentityService
             {
                 return IdentityErrors.AccountCreationError;
             }
-            _context.Set<SpotPortfolio>().Add(new SpotPortfolio { });
-            await _context.SaveChangesAsync(cancellation);
-            _context.Set<FuturesPortfolio>().Add(new FuturesPortfolio { });
-            await _context.SaveChangesAsync(cancellation);
+            FuturesPortfolio futuresPortfolio = new FuturesPortfolio
+            {
+                UserId = user.Id,
+                AllTransactionsWorth = 0,
+                Balance = 0,
+                DailyProfit = 0,
+                MonthlyProfit = 0,
+                WeeklyProfit = 0
+            };
+            SpotPortfolio spotPortfolio = new SpotPortfolio
+            {
+                UserId = user.Id,
+                AllTransactionsWorth = 0,
+                Balance = 0,
+                DailyProfit = 0,
+                MonthlyProfit = 0,
+                WeeklyProfit = 0
+            };
+            Portfolio portfolio = new Portfolio
+            {
+                UserId = user.Id,
+                AllTransactionsWorth = 0,
+                Balance = 0,
+                DailyProfit = 0,
+                MonthlyProfit = 0,
+                WeeklyProfit = 0,
+                FuturesPortfolioId = futuresPortfolio.Id,
+                SpotPortfolioId = spotPortfolio.Id
+            };
+            await _futuresPortfolioService.AddFuturesPortfolio(futuresPortfolio, cancellation);
+            await _spotPortfolioService.AddSpotPortfolio(spotPortfolio, cancellation);
+            await _portfolioService.AddPortfolio(portfolio, cancellation);
             return RequestResult.Success();
         }
 

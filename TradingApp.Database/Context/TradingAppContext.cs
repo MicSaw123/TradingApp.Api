@@ -4,8 +4,8 @@ using TradingApp.Application.Services.Interfaces.Database;
 using TradingApp.Database.TradingAppUsers;
 using TradingApp.Domain.Coins;
 using TradingApp.Domain.Futures;
-using TradingApp.Domain.Portfolio;
 using TradingApp.Domain.Spot;
+using TradingApp.Domain.SummaryPortfolio;
 
 namespace TradingApp.Database.Context
 {

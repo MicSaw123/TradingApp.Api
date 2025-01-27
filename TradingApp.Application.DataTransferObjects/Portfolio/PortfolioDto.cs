@@ -2,7 +2,7 @@
 {
     public class PortfolioDto
     {
-        public string TradingAppUserId { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
 
         public float Balance { get; set; }
 
@@ -12,6 +12,6 @@
 
         public int FuturesPortfolioId { get; set; }
 
-        public SpotPortfolioDto SpotPortfolio { get; set; }
+        public int SpotPortfolioId { get; set; }
     }
 }

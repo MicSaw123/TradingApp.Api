@@ -10,12 +10,14 @@
 
         public float MoneyInput { get; set; }
 
-        public float SellingPrice { get; set; }
-
         public string CoinSymbol { get; set; } = string.Empty;
 
-        public bool isActive { get; set; }
+        public bool IsActive { get; set; }
 
         public float TransactionProfit { get; set; }
+
+        public float TodaysProfit { get; set; }
+
+        public DateOnly ClosingTransactionDate { get; set; }
     }
 }

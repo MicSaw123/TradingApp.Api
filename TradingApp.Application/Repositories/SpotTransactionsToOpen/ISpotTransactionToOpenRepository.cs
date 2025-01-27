@@ -1,18 +1,21 @@
-﻿using TradingApp.Application.DataTransferObjects.Spot;
+﻿using TradingApp.Domain.Spot;
 
 namespace TradingApp.Application.Repositories.SpotTransactionToAdd
 {
     public interface ISpotTransactionToOpenRepository
     {
-        Task<RequestResult> OpenWaitingSpotTransaction(CancellationToken cancellation);
+        Task AddSpotTransactionToOpen(SpotTransactionToOpen futuresTransactionToOpen, CancellationToken cancellation);
 
-        Task<RequestResult> AddAwaitingTransactionToSpotPortfolio(
-            SpotTransactionToOpenDto transaction,
-            CancellationToken cancellation = default);
+        Task RemoveSpotTransactionToOpen(SpotTransactionToOpen futuresTransactionToOpen, CancellationToken cancellation);
 
-        Task<RequestResult> CancelAwaitingSpotTransaction(int id, int spotPortfolioId, CancellationToken cancellation);
+        Task<IEnumerable<SpotTransactionToOpen>> GetSpotTransactionsToOpenByPortfolioId(int portfolioId);
 
-        Task<RequestResult> EditAwaitingSpotTransaction(SpotTransactionToOpenDto spotTransactionToOpenDto,
+        Task<SpotTransactionToOpen> GetSpotTransactionToOpenById(int id);
+
+        Task<IEnumerable<SpotTransactionToOpen>> GetSpotTransactionsToOpen();
+
+        Task EditSpotTransactionToOpen(SpotTransactionToOpen futuresTransactionToOpen,
             CancellationToken cancellation);
+
     }
 }

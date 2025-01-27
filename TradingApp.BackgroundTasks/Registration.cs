@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Quartz;
+using TradingApp.BackgroundTasks.CoinBackgroundJobs;
 using TradingApp.BackgroundTasks.FuturesTransactionsToOpenBackgroundJob;
-using TradingApp.BackgroundTasks.SpotPortfolioBackgroundJobs;
 using TradingApp.BackgroundTasks.SpotTransactionsJobs;
 
 namespace TradingApp.BackgroundTasks
@@ -12,11 +12,11 @@ namespace TradingApp.BackgroundTasks
         {
             services.AddQuartz(options =>
             {
-                options.UseMicrosoftDependencyInjectionJobFactory();
                 var openAwaitingSpotTransactions = JobKey.Create(nameof(OpenAwaitingSpotTransactions));
                 var closeSpotTransactions = JobKey.Create(nameof(CloseSpotTransactions));
-                var calculateSpotTransactionProfits = JobKey.Create(nameof(CalculateSpotPortfolioProfit));
+                var calculateSpotPortfolioProfit = JobKey.Create(nameof(CalculateSpotTransactionProfits));
                 var openFuturesTransactionsToOpen = JobKey.Create(nameof(FuturesTransactionsToOpen));
+                var updateAllTimeCoinValues = JobKey.Create(nameof(UpdateAllTimeCoinValues));
 
                 options.AddJob<OpenAwaitingSpotTransactions>(openAwaitingSpotTransactions)
                 .AddTrigger(trigger => trigger.ForJob(openAwaitingSpotTransactions).
@@ -26,13 +26,17 @@ namespace TradingApp.BackgroundTasks
                 trigger.ForJob(closeSpotTransactions).
                 WithSimpleSchedule(schedule => schedule.WithIntervalInSeconds(20).RepeatForever()));
 
-                options.AddJob<CalculateSpotPortfolioProfit>(calculateSpotTransactionProfits)
-                .AddTrigger(trigger => trigger.ForJob(calculateSpotTransactionProfits).
+                options.AddJob<CalculateSpotTransactionProfits>(calculateSpotPortfolioProfit)
+                .AddTrigger(trigger => trigger.ForJob(calculateSpotPortfolioProfit).
                 WithSimpleSchedule(schedule => schedule.WithIntervalInSeconds(20).RepeatForever()));
 
                 options.AddJob<FuturesTransactionsToOpen>(openFuturesTransactionsToOpen).AddTrigger(trigger =>
                 trigger.ForJob(openFuturesTransactionsToOpen).WithSimpleSchedule(schedule =>
                 schedule.WithIntervalInSeconds(20).RepeatForever()));
+
+                options.AddJob<UpdateAllTimeCoinValues>(updateAllTimeCoinValues).AddTrigger(trigger =>
+                trigger.ForJob(updateAllTimeCoinValues).WithSimpleSchedule(schedule =>
+                schedule.WithIntervalInSeconds(30).RepeatForever()));
             });
 
             services.AddQuartzHostedService();

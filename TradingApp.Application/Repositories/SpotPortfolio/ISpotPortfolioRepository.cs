@@ -1,18 +1,19 @@
-﻿using TradingApp.Application.DataTransferObjects.Portfolio;
+﻿using TradingApp.Domain.Spot;
 
 namespace TradingApp.Application.Repositories.SpotPortfolioRepository
 {
     public interface ISpotPortfolioRepository
     {
-        Task<RequestResult<SpotPortfolioDto>> GetSpotPortfolioByUserId(string userId);
-        Task<RequestResult> SubtractBalance(int id, float amountToSubtract,
-            CancellationToken cancellation);
+        Task<IEnumerable<SpotPortfolio>> GetSpotPortfolios();
 
-        Task<RequestResult> AddBalance(int id, float amountToAdd,
-            CancellationToken cancellation);
+        Task UpdateSpotPortfolio(SpotPortfolio spotPortfolio, CancellationToken cancellation);
 
-        Task<RequestResult<SpotPortfolioDto>> GetSpotPortfolioById(int id);
+        Task<SpotPortfolio> GetSpotPortfolioById(int id);
 
-        Task<RequestResult> CalculateProfits(CancellationToken cancellation);
+        Task UpdateSpotPortfolios(List<SpotPortfolio> spotPortfolios, CancellationToken cancellation);
+
+        Task<SpotPortfolio> GetSpotPortfolioByUserId(string userId);
+
+        Task AddSpotPortfolio(SpotPortfolio spotportfolio, CancellationToken cancellation);
     }
 }

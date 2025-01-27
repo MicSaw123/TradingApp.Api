@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TradingApp.Application.Services.Interfaces.Database;
-using TradingApp.Domain.Errors.Errors.SpotPortfolioErrors;
 using TradingApp.Domain.Futures;
 
 namespace TradingApp.Application.Repositories.FuturesPortfolios
@@ -14,42 +13,34 @@ namespace TradingApp.Application.Repositories.FuturesPortfolios
             _context = context;
         }
 
-        public async Task<RequestResult> AddBalance(int portfolioId, float balanceToAdd, CancellationToken cancellation)
+        public async Task AddFuturesPortfolio(FuturesPortfolio futuresPortfolio, CancellationToken cancellation)
         {
-            var portfolio = await _context.Set<FuturesPortfolio>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == portfolioId);
-            if (portfolio is not null)
-            {
-                portfolio.Balance += balanceToAdd;
-                _context.Set<FuturesPortfolio>().Update(portfolio);
-                await _context.SaveChangesAsync(cancellation);
-            }
-            else
-            {
-                return RequestResult.Failure(PortfolioError.ErrorGetPortfolioById);
-            }
-            return RequestResult.Success();
+            await _context.Set<FuturesPortfolio>().AddAsync(futuresPortfolio);
+            await _context.SaveChangesAsync(cancellation);
         }
 
-        public async Task<RequestResult> SubtractBalance(int portfolioId, float balanceToSubtract,
-            CancellationToken cancellation)
+        public async Task<FuturesPortfolio> GetFuturesPortfolioById(int id)
         {
-            var portfolio = await _context.Set<FuturesPortfolio>().AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == portfolioId);
-            if (portfolio is not null)
-            {
-                portfolio.Balance -= balanceToSubtract;
-                if (portfolio.Balance < 0)
-                {
-                    return RequestResult.Failure(PortfolioError.NonSufficientFunds);
-                }
-                _context.Set<FuturesPortfolio>().Update(portfolio);
-                await _context.SaveChangesAsync(cancellation);
-            }
-            else
-            {
-                return RequestResult.Failure(PortfolioError.ErrorGetPortfolioById);
-            }
-            return RequestResult.Success();
+            var portfolio = await _context.Set<FuturesPortfolio>().FirstOrDefaultAsync(x => x.Id == id);
+            return portfolio;
+        }
+
+        public async Task<List<FuturesPortfolio>> GetFuturesPortfolios()
+        {
+            var futuresPortfolios = _context.Set<FuturesPortfolio>().ToList();
+            return futuresPortfolios;
+        }
+
+        public async Task UpdateFuturesPortfolio(FuturesPortfolio portfolio, CancellationToken cancellation)
+        {
+            _context.Set<FuturesPortfolio>().Update(portfolio);
+            await _context.SaveChangesAsync(cancellation); ;
+        }
+
+        public async Task UpdateFuturesPortfolios(List<FuturesPortfolio> futuresTransactions, CancellationToken cancellation)
+        {
+            _context.Set<FuturesPortfolio>().UpdateRange(futuresTransactions);
+            await _context.SaveChangesAsync(cancellation);
         }
     }
 }

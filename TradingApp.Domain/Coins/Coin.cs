@@ -6,8 +6,8 @@
 
         public string Symbol { get; set; } = string.Empty;
 
-        public string AllTimeHighPrice { get; set; } = string.Empty;
+        public float AllTimeHighPrice { get; set; }
 
-        public string AllTimeLowPrice { get; set; } = string.Empty;
+        public float AllTimeLowPrice { get; set; }
     }
 }

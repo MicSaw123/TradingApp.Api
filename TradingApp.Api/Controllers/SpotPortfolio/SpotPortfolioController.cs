@@ -2,7 +2,7 @@
 using TradingApp.Api.Controllers.Base;
 using TradingApp.Application.Services.SpotPortfolioService;
 
-namespace TradingApp.Api.Controllers.Portfolio
+namespace TradingApp.Api.Controllers.SpotPortfolio
 {
     [Route("api/[controller]")]
     [ApiController]

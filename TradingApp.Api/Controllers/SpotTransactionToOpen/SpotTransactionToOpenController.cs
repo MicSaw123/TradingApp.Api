@@ -35,11 +35,11 @@ namespace TradingApp.Api.Controllers.SpotTransactionToOpen
         }
 
         [HttpDelete("CancelAwaitingSpotTransaction")]
-        public async Task<IActionResult> CancelAwaitingSpotTransaction(int id, int spotPortfolioId,
+        public async Task<IActionResult> CancelAwaitingSpotTransaction(int id,
             CancellationToken cancellation = default)
         {
             return CreateResponse(await _spotTransactionToOpenService.
-                CancelAwaitingSpotTransaction(id, spotPortfolioId, cancellation));
+                CancelAwaitingSpotTransaction(id, cancellation));
         }
 
         [HttpPut("EditAwaitingSpotTransaction")]

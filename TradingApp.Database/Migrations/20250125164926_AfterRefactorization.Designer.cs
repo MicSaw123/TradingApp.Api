@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TradingApp.Database.Context;
 
@@ -11,9 +12,11 @@ using TradingApp.Database.Context;
 namespace TradingApp.Database.Migrations
 {
     [DbContext(typeof(TradingAppContext))]
-    partial class TradingAppContextModelSnapshot : ModelSnapshot
+    [Migration("20250125164926_AfterRefactorization")]
+    partial class AfterRefactorization
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -228,11 +231,13 @@ namespace TradingApp.Database.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<float>("AllTimeHighPrice")
-                        .HasColumnType("real");
+                    b.Property<string>("AllTimeHighPrice")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<float>("AllTimeLowPrice")
-                        .HasColumnType("real");
+                    b.Property<string>("AllTimeLowPrice")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Symbol")
                         .IsRequired()
@@ -305,9 +310,6 @@ namespace TradingApp.Database.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsShort")
-                        .HasColumnType("bit");
-
                     b.Property<int>("Leverage")
                         .HasColumnType("int");
 
@@ -315,6 +317,9 @@ namespace TradingApp.Database.Migrations
                         .HasColumnType("real");
 
                     b.Property<float>("MoneyInput")
+                        .HasColumnType("real");
+
+                    b.Property<float>("SellingPrice")
                         .HasColumnType("real");
 
                     b.Property<float>("TodaysProfit")
@@ -364,6 +369,54 @@ namespace TradingApp.Database.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FuturesTransactionsToOpen");
+                });
+
+            modelBuilder.Entity("TradingApp.Domain.Portfolio.Portfolio", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<float>("AllTransactionsWorth")
+                        .HasColumnType("real");
+
+                    b.Property<float>("Balance")
+                        .HasColumnType("real");
+
+                    b.Property<float>("DailyProfit")
+                        .HasColumnType("real");
+
+                    b.Property<int>("FuturesPortfolioId")
+                        .HasColumnType("int");
+
+                    b.Property<float>("MonthlyProfit")
+                        .HasColumnType("real");
+
+                    b.Property<int>("SpotPortfolioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TradingAppUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float>("WeeklyProfit")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FuturesPortfolioId");
+
+                    b.HasIndex("SpotPortfolioId");
+
+                    b.HasIndex("TradingAppUserId");
+
+                    b.ToTable("Portfolios");
                 });
 
             modelBuilder.Entity("TradingApp.Domain.Spot.SpotPortfolio", b =>
@@ -471,44 +524,6 @@ namespace TradingApp.Database.Migrations
                     b.ToTable("SpotTransactionsToOpen");
                 });
 
-            modelBuilder.Entity("TradingApp.Domain.SummaryPortfolio.Portfolio", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<float>("AllTransactionsWorth")
-                        .HasColumnType("real");
-
-                    b.Property<float>("Balance")
-                        .HasColumnType("real");
-
-                    b.Property<float>("DailyProfit")
-                        .HasColumnType("real");
-
-                    b.Property<int>("FuturesPortfolioId")
-                        .HasColumnType("int");
-
-                    b.Property<float>("MonthlyProfit")
-                        .HasColumnType("real");
-
-                    b.Property<int>("SpotPortfolioId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<float>("WeeklyProfit")
-                        .HasColumnType("real");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Portfolios");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -558,6 +573,33 @@ namespace TradingApp.Database.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("TradingApp.Domain.Portfolio.Portfolio", b =>
+                {
+                    b.HasOne("TradingApp.Domain.Futures.FuturesPortfolio", "FuturesPortfolio")
+                        .WithMany()
+                        .HasForeignKey("FuturesPortfolioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TradingApp.Domain.Spot.SpotPortfolio", "SpotPortfolio")
+                        .WithMany()
+                        .HasForeignKey("SpotPortfolioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TradingApp.Database.TradingAppUsers.TradingAppUser", "TradingAppUser")
+                        .WithMany()
+                        .HasForeignKey("TradingAppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FuturesPortfolio");
+
+                    b.Navigation("SpotPortfolio");
+
+                    b.Navigation("TradingAppUser");
                 });
 #pragma warning restore 612, 618
         }

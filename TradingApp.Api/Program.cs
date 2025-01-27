@@ -87,7 +87,7 @@ builder.Services.AddBackgroundTasks();
 builder.Services.AddControllers();
 builder.Services.AddApplication();
 builder.Services.AddHttpClient();
-builder.Services.AddHostedService<CoinBackgroundJob>();
+builder.Services.AddHostedService<GetCoinsPerPageBackgroundJob>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

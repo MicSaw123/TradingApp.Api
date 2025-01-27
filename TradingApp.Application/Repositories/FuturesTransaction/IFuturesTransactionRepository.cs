@@ -1,17 +1,19 @@
-﻿using TradingApp.Application.DataTransferObjects.Transaction;
+﻿using TradingApp.Domain.Futures;
 
 namespace TradingApp.Application.Repositories.TransactionRepository.FuturesTransactionRepository
 {
     public interface IFuturesTransactionRepository
     {
-        Task<RequestResult> CloseFuturesTransaction(int id, int portfolioId, CancellationToken cancellation);
+        Task UpdateFuturesTransaction(FuturesTransaction transaction, CancellationToken cancellation);
 
-        Task<RequestResult<IEnumerable<FuturesTransactionDto>>>
-            GetFuturesTransactionByPortfolioId(int portfolioId, CancellationToken cancellation);
+        Task UpdateFuturesTransactionRange(List<FuturesTransaction> futuresTransactions, CancellationToken cancellation);
 
-        Task<RequestResult> CalculateTransactionsProfits(CancellationToken cancellation);
+        Task<IEnumerable<FuturesTransaction>> GetActiveFuturesTransactionsByPortfolioId
+            (int portfolioId);
 
-        Task<RequestResult> EditFuturesTransaction(FuturesTransactionDto futuresTransactionDto,
-            CancellationToken cancellation);
+        Task<FuturesTransaction> GetActiveFuturesTransactionById(int id);
+
+        Task AddFuturesTransaction(FuturesTransaction futuresTransaction, CancellationToken cancellation);
+
     }
 }

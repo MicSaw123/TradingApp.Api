@@ -1,16 +1,23 @@
-﻿using TradingApp.Application.DataTransferObjects.Transaction;
+﻿using TradingApp.Domain.Spot;
 
 namespace TradingApp.Application.Repositories.SpotTransactionRepository
 {
     public interface ISpotTransactionRepository
     {
-        Task<RequestResult> CloseExistingTransaction(CancellationToken cancellation);
+        Task<IEnumerable<SpotTransaction>> GetActiveSpotTransactionsByPortfolioId(int portfolioId);
 
-        Task<RequestResult> CalculateSpotTransactionProfit(CancellationToken cancellation);
+        Task<IEnumerable<SpotTransaction>> GetInactiveSpotTransactionsByPortfolioId(int potfolioId);
 
-        Task<RequestResult> CloseSpotTransactionManually(SpotTransactionDto spotTransactionDto,
-            CancellationToken cancellation);
+        Task<SpotTransaction> GetSpotTransactionById(int transactionId);
 
-        Task<RequestResult> EditSpotTransaction(SpotTransactionDto spotTransactionDto, CancellationToken cancellation);
+        Task UpdateSpotTransaction(SpotTransaction spotTransaction, CancellationToken cancellation);
+
+        Task UpdateSpotTransactionRange(List<SpotTransaction> spotTransactions, CancellationToken cancellation);
+
+        Task AddSpotTransaction(SpotTransaction spotTransaction, CancellationToken cancellation);
+
+        Task<IEnumerable<SpotTransaction>> GetSpotTransactionsWithSellingPrice();
+
+        Task<SpotTransaction> GetExistingSpotTransactionWithSpecifiedCoinSymbol(int portfolioId, string coinSymbol);
     }
 }

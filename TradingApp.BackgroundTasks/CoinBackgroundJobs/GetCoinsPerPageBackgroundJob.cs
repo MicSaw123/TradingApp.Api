@@ -9,14 +9,14 @@ using TradingApp.Application.Services.ConnectionManager;
 
 namespace TradingApp.BackgroundTasks.CoinBackgroundJobs
 {
-    public class CoinBackgroundJob : BackgroundService
+    public class GetCoinsPerPageBackgroundJob : BackgroundService
     {
         private readonly IHubContext<CoinListHub, ICoinListHub> _hubContext;
         private readonly IMemoryCache _memoryCache;
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnectionManager _connectionManager;
 
-        public CoinBackgroundJob(IHubContext<CoinListHub, ICoinListHub> hubContext,
+        public GetCoinsPerPageBackgroundJob(IHubContext<CoinListHub, ICoinListHub> hubContext,
             IMemoryCache memoryCache, IServiceProvider serviceProvider, IConnectionManager connectionManager)
         {
             _hubContext = hubContext;
