@@ -29,7 +29,8 @@ namespace TradingApp.Application.Repositories.SpotTransactionRepository
 
         public async Task<IEnumerable<SpotTransaction>> GetInactiveSpotTransactionsByPortfolioId(int portfolioId)
         {
-            var incativeTransactions = _context.Set<SpotTransaction>().Where(x => x.IsActive == false && x.SpotPortfolioId == portfolioId)
+            var incativeTransactions = _context.Set<SpotTransaction>()
+                .Where(x => x.IsActive == false && x.SpotPortfolioId == portfolioId)
                 .AsEnumerable();
             return incativeTransactions;
         }

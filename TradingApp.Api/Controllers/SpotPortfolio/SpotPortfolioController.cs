@@ -15,13 +15,6 @@ namespace TradingApp.Api.Controllers.SpotPortfolio
             _spotPortfolioService = spotPortfolioService;
         }
 
-        [HttpGet("GetSpotPortfolioByUserId")]
-        public async Task<IActionResult> GetSpotPortfolioByUserId(string userId)
-        {
-            var result = await _spotPortfolioService.GetSpotPortfolioByUserId(userId);
-            return CreateResponse(result);
-        }
-
         [HttpPut("SubtractBalance")]
         public async Task<IActionResult> SubtractBalance(int id, float amountToSubtract,
             CancellationToken cancellation)
@@ -29,6 +22,12 @@ namespace TradingApp.Api.Controllers.SpotPortfolio
             var result = await _spotPortfolioService.SubtractBalance(id,
                 amountToSubtract, cancellation);
             return CreateResponse(result);
+        }
+
+        [HttpGet("GetSpotPortfolioById")]
+        public async Task<IActionResult> GetSpotPortfolioById(int portfolioId)
+        {
+            return CreateResponse(await _spotPortfolioService.GetSpotPortfolioDtoById(portfolioId));
         }
 
         [HttpPut("AddBalance")]

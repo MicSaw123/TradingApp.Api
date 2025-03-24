@@ -6,5 +6,6 @@ namespace TradingApp.Domain.Spot
     {
         public int SpotPortfolioId { get; set; }
 
+        public float SellingPrice { get; set; }
     }
 }

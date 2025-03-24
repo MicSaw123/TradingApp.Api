@@ -111,35 +111,33 @@ namespace TradingApp.Application.Services.IdentityService
             }
             FuturesPortfolio futuresPortfolio = new FuturesPortfolio
             {
-                UserId = user.Id,
-                AllTransactionsWorth = 0,
-                Balance = 0,
+                AllocatedBalance = 0,
+                DisposableBalance = 0,
                 DailyProfit = 0,
                 MonthlyProfit = 0,
                 WeeklyProfit = 0
             };
+            await _futuresPortfolioService.AddFuturesPortfolio(futuresPortfolio, cancellation);
             SpotPortfolio spotPortfolio = new SpotPortfolio
             {
-                UserId = user.Id,
-                AllTransactionsWorth = 0,
-                Balance = 0,
+                AllocatedBalance = 0,
+                DisposableBalance = 0,
                 DailyProfit = 0,
                 MonthlyProfit = 0,
                 WeeklyProfit = 0
             };
+            await _spotPortfolioService.AddSpotPortfolio(spotPortfolio, cancellation);
             Portfolio portfolio = new Portfolio
             {
                 UserId = user.Id,
-                AllTransactionsWorth = 0,
-                Balance = 0,
+                AllocatedBalance = 0,
+                DisposableBalance = 0,
                 DailyProfit = 0,
                 MonthlyProfit = 0,
                 WeeklyProfit = 0,
                 FuturesPortfolioId = futuresPortfolio.Id,
                 SpotPortfolioId = spotPortfolio.Id
             };
-            await _futuresPortfolioService.AddFuturesPortfolio(futuresPortfolio, cancellation);
-            await _spotPortfolioService.AddSpotPortfolio(spotPortfolio, cancellation);
             await _portfolioService.AddPortfolio(portfolio, cancellation);
             return RequestResult.Success();
         }

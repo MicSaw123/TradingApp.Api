@@ -38,5 +38,14 @@ namespace TradingApp.Api.Controllers.FuturesTransactionsToOpen
             return await _futuresTransactionsToOpenService
                 .EditFuturesTransactionToOpen(futuresTransactionToOpenDto, cancellation);
         }
+
+        [HttpGet("GetFuturesTransactionsToOpenByPortfolioId")]
+        public async Task<IActionResult>
+            GetFuturesTransactionsToOpenByPortfolioId(int portfolioId)
+        {
+            return CreateResponse(
+                await _futuresTransactionsToOpenService.GetFuturesTransactionsToOpenById(portfolioId));
+        }
+
     }
 }

@@ -47,7 +47,7 @@ namespace TradingApp.Application.Repositories.SpotTransactionsToOpen
             return spotTransactionToOpen;
         }
 
-        public async Task<IEnumerable<SpotTransactionToOpen>> GetSpotTransactionsToOpen()
+        public async Task<List<SpotTransactionToOpen>> GetSpotTransactionsToOpen()
         {
             var transactions = _context.Set<SpotTransactionToOpen>().ToList();
             return transactions;

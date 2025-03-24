@@ -8,5 +8,7 @@ namespace TradingApp.Application.Services.PortfolioService
         Task<RequestResult<PortfolioDto>> GetPortfolioByUserId(string userId);
 
         Task<RequestResult> AddPortfolio(Portfolio portfolio, CancellationToken cancellation);
+
+        Task<RequestResult> UpdatePortfolio(PortfolioDto portfolioDto, CancellationToken cancellation);
     }
 }

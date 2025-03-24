@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TradingApp.Database.Context;
 
@@ -11,9 +12,11 @@ using TradingApp.Database.Context;
 namespace TradingApp.Database.Migrations
 {
     [DbContext(typeof(TradingAppContext))]
-    partial class TradingAppContextModelSnapshot : ModelSnapshot
+    [Migration("20250219133550_userIdRemovedFromPortfolios")]
+    partial class userIdRemovedFromPortfolios
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,13 +254,13 @@ namespace TradingApp.Database.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<float>("AllocatedBalance")
+                    b.Property<float>("AllTransactionsWorth")
+                        .HasColumnType("real");
+
+                    b.Property<float>("Balance")
                         .HasColumnType("real");
 
                     b.Property<float>("DailyProfit")
-                        .HasColumnType("real");
-
-                    b.Property<float>("DisposableBalance")
                         .HasColumnType("real");
 
                     b.Property<float>("MonthlyProfit")
@@ -307,7 +310,7 @@ namespace TradingApp.Database.Migrations
                     b.Property<bool>("IsShort")
                         .HasColumnType("bit");
 
-                    b.Property<DateOnly?>("LastEditTransactionDate")
+                    b.Property<DateOnly>("LastEditTransactionDate")
                         .HasColumnType("date");
 
                     b.Property<int>("Leverage")
@@ -376,13 +379,13 @@ namespace TradingApp.Database.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<float>("AllocatedBalance")
+                    b.Property<float>("AllTransactionsWorth")
+                        .HasColumnType("real");
+
+                    b.Property<float>("Balance")
                         .HasColumnType("real");
 
                     b.Property<float>("DailyProfit")
-                        .HasColumnType("real");
-
-                    b.Property<float>("DisposableBalance")
                         .HasColumnType("real");
 
                     b.Property<float>("MonthlyProfit")
@@ -423,7 +426,7 @@ namespace TradingApp.Database.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<DateOnly?>("LastEditTransactionDate")
+                    b.Property<DateOnly>("LastEditTransactionDate")
                         .HasColumnType("date");
 
                     b.Property<float>("MoneyInput")
@@ -464,9 +467,6 @@ namespace TradingApp.Database.Migrations
                     b.Property<float>("MoneyInput")
                         .HasColumnType("real");
 
-                    b.Property<float>("SellingPrice")
-                        .HasColumnType("real");
-
                     b.Property<int>("SpotPortfolioId")
                         .HasColumnType("int");
 
@@ -483,13 +483,13 @@ namespace TradingApp.Database.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<float>("AllocatedBalance")
+                    b.Property<float>("AllTransactionsWorth")
+                        .HasColumnType("real");
+
+                    b.Property<float>("Balance")
                         .HasColumnType("real");
 
                     b.Property<float>("DailyProfit")
-                        .HasColumnType("real");
-
-                    b.Property<float>("DisposableBalance")
                         .HasColumnType("real");
 
                     b.Property<int>("FuturesPortfolioId")

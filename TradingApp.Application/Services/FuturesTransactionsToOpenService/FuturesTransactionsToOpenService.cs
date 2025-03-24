@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using TradingApp.Application.DataTransferObjects.Futures;
+using TradingApp.Application.DataTransferObjects.Transaction;
 using TradingApp.Application.Repositories.DbTransactionRepository;
 using TradingApp.Application.Repositories.FuturesTransactionToOpenRepository;
 using TradingApp.Application.Services.CoinService;
 using TradingApp.Application.Services.FuturesPortfoliosService;
+using TradingApp.Application.Services.FuturesTransactionsService;
 using TradingApp.Domain.Errors.TransactionToOpenErrors;
 using TradingApp.Domain.Futures;
 
@@ -16,16 +18,19 @@ namespace TradingApp.Application.Services.FuturesTransactionsToOpenService
         private readonly IMapper _mapper;
         private readonly IFuturesPortfolioService _futuresPortfolioService;
         private readonly ICoinService _coinService;
+        private readonly IFuturesTransactionService _futuresTransactionService;
 
         public FuturesTransactionsToOpenService(IFuturesTransactionToOpenRepository futuresTransactionToOpenRepository,
-            IDbTransactionRepository dbTransaction, IMapper mapper, IFuturesPortfolioService futuresPortfolioService,
-            ICoinService coinService)
+            IDbTransactionRepository dbTransaction, IMapper mapper,
+            IFuturesPortfolioService futuresPortfolioService,
+            ICoinService coinService, IFuturesTransactionService futuresTransactionService)
         {
             _futuresTransactionToOpenRepository = futuresTransactionToOpenRepository;
             _dbTransaction = dbTransaction;
             _mapper = mapper;
             _futuresPortfolioService = futuresPortfolioService;
             _coinService = coinService;
+            _futuresTransactionService = futuresTransactionService;
         }
 
         public async Task<RequestResult> AddFuturesTransactionToOpen(FuturesTransactionToOpenDto futuresTransactionToOpenDto,
@@ -104,34 +109,80 @@ namespace TradingApp.Application.Services.FuturesTransactionsToOpenService
             return RequestResult.Success();
         }
 
+        public async Task<RequestResult<IEnumerable<FuturesTransactionToOpenDto>>>
+            GetFuturesTransactionsToOpenById(int portfolioId)
+        {
+            var futuresTransactionsToOpen = await
+                _futuresTransactionToOpenRepository.GetFuturesTransactionsToOpenByPortfolioId(portfolioId);
+            if (futuresTransactionsToOpen is null)
+            {
+                return RequestResult<IEnumerable<FuturesTransactionToOpenDto>>
+                    .Failure(TransactionToOpenError.ErrorGetAwaitingTransactionsToOpenById);
+            }
+
+            var futuresTransactionsToOpenDtos = _mapper
+                .Map<IEnumerable<FuturesTransactionToOpenDto>>(futuresTransactionsToOpen);
+            return RequestResult<IEnumerable<FuturesTransactionToOpenDto>>
+                .Success(futuresTransactionsToOpenDtos);
+        }
+
         public async Task<RequestResult> OpenFuturesTransactionToOpen(CancellationToken cancellation)
         {
-            var transactionsToOpen = await _futuresTransactionToOpenRepository.GetFuturesTransactionsToOpen();
-            foreach (var transactionToOpen in transactionsToOpen)
+            var futuresTransactionsToOpen = await
+                      _futuresTransactionToOpenRepository.GetFuturesTransactionsToOpen();
+            foreach (var futuresTransactionToOpen in futuresTransactionsToOpen)
             {
-                var coin = await _coinService.GetCoinBySymbol(transactionToOpen.CoinSymbol);
+                var coin = await _coinService
+                    .GetCoinBySymbol(futuresTransactionToOpen.CoinSymbol);
                 using var dbTransaction = _dbTransaction.BeginTransaction();
                 try
                 {
-                    if (transactionToOpen.BuyingPrice >= coin.Result.Price)
+                    if (futuresTransactionToOpen.BuyingPrice >= coin.Result.Price)
                     {
-                        var futuresTransaction = _mapper.Map<FuturesTransaction>(transactionToOpen);
-                        futuresTransaction.IsActive = true;
-                        futuresTransaction.AmountOfCoin = futuresTransaction.MoneyInput / coin.Result.Price;
-                        futuresTransaction.BuyingPrice = coin.Result.Price;
-                        await _futuresTransactionToOpenRepository.AddFuturesTransactionToOpen(transactionToOpen, cancellation);
-                        await _futuresTransactionToOpenRepository.RemoveFuturesTransactionToOpen(transactionToOpen, cancellation);
-                        dbTransaction.Commit();
-                        return RequestResult.Success();
+                        var futuresTransactionToAdd = _mapper.Map<FuturesTransaction>(futuresTransactionToOpen);
+                        futuresTransactionToAdd.AmountOfCoin = futuresTransactionToAdd.MoneyInput
+                                                               / coin.Result.Price;
+                        futuresTransactionToAdd.IsActive = true;
+                        futuresTransactionToAdd.OpenTransactionDate = DateOnly.FromDateTime(DateTime.Today);
+                        futuresTransactionToAdd.BuyingPrice = coin.Result.Price;
+                        futuresTransactionToAdd.CurrentTransactionWorth =
+                            coin.Result.Price * futuresTransactionToAdd.AmountOfCoin;
+                        var existingFuturesTransaction = await _futuresTransactionService
+                            .GetFuturesTransactionByCoinSymbol(futuresTransactionToAdd.FuturesPortfolioId,
+                                futuresTransactionToAdd.CoinSymbol);
+                        if (existingFuturesTransaction != null)
+                        {
+                            float previousPrice = existingFuturesTransaction.BuyingPrice;
+                            float previousAmountOfCoins = existingFuturesTransaction.AmountOfCoin;
+                            float previousMoneyInput = existingFuturesTransaction.MoneyInput;
+                            existingFuturesTransaction.MoneyInput += futuresTransactionToAdd.MoneyInput;
+                            existingFuturesTransaction.AmountOfCoin += futuresTransactionToAdd.AmountOfCoin;
+                            existingFuturesTransaction.BuyingPrice = (previousMoneyInput +
+                                                                   futuresTransactionToAdd.MoneyInput) /
+                                (previousAmountOfCoins + futuresTransactionToAdd.AmountOfCoin);
+                            var existingFuturesTransactionDto = _mapper.Map<FuturesTransactionDto>(existingFuturesTransaction);
+                            await _futuresTransactionService.EditFuturesTransaction(existingFuturesTransactionDto, cancellation);
+                            await _futuresTransactionToOpenRepository
+                                .RemoveFuturesTransactionToOpen(futuresTransactionToOpen, cancellation);
+                            dbTransaction.Commit();
+                            return RequestResult.Success();
+                        }
+                        else
+                        {
+                            await _futuresTransactionService.AddFuturesTransaction(futuresTransactionToAdd, cancellation);
+                            await _futuresTransactionToOpenRepository
+                                .RemoveFuturesTransactionToOpen(futuresTransactionToOpen, cancellation);
+                            dbTransaction.Commit();
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
                     dbTransaction.Rollback();
-                    throw;
+                    return RequestResult.Failure(TransactionToOpenError.ErrorOpenAwaitingTransactionToOpen);
                 }
             }
-            return RequestResult.Failure(TransactionToOpenError.ErrorOpenAwaitingTransactionToOpen);
+            return RequestResult.Success();
         }
     }
 }

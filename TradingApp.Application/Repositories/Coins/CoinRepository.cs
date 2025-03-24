@@ -1,4 +1,5 @@
-﻿using TradingApp.Application.Services.Interfaces.Database;
+﻿using Microsoft.EntityFrameworkCore;
+using TradingApp.Application.Services.Interfaces.Database;
 using TradingApp.Domain.Coins;
 
 namespace TradingApp.Application.Repositories.Coins
@@ -16,6 +17,12 @@ namespace TradingApp.Application.Repositories.Coins
         {
             await _context.Set<Coin>().AddRangeAsync(coins);
             await _context.SaveChangesAsync(cancellation);
+        }
+
+        public async Task<Coin> GetCoinBySymbol(string coinSymbol)
+        {
+            var coin = await _context.Set<Coin>().FirstOrDefaultAsync(x => x.Symbol == coinSymbol);
+            return coin;
         }
 
         public async Task EditCoins(List<Coin> coins, CancellationToken cancellation)

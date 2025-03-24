@@ -13,9 +13,9 @@ namespace TradingApp.Application.Repositories.SpotPortfolioRepository
             _context = context;
         }
 
-        public async Task<IEnumerable<SpotPortfolio>> GetSpotPortfolios()
+        public async Task<List<SpotPortfolio>> GetSpotPortfolios()
         {
-            var spotPortfolios = _context.Set<SpotPortfolio>().AsEnumerable();
+            var spotPortfolios = _context.Set<SpotPortfolio>().ToList();
             return spotPortfolios;
         }
 
@@ -35,12 +35,6 @@ namespace TradingApp.Application.Repositories.SpotPortfolioRepository
         {
             _context.Set<SpotPortfolio>().UpdateRange(spotPortfolios);
             await _context.SaveChangesAsync(cancellation);
-        }
-
-        public async Task<SpotPortfolio> GetSpotPortfolioByUserId(string userId)
-        {
-            var spotPortfolio = await _context.Set<SpotPortfolio>().FirstOrDefaultAsync(x => x.UserId == userId);
-            return spotPortfolio;
         }
 
         public async Task AddSpotPortfolio(SpotPortfolio spotportfolio, CancellationToken cancellation)

@@ -33,27 +33,44 @@ namespace TradingApp.Application.Services.SpotTransactionService
             await _spotTransactionRepository.AddSpotTransaction(spotTransaction, cancellation);
         }
 
+        public async Task<RequestResult<IEnumerable<SpotTransactionDto>>> GetInactiveSpotTransactionsByPortfolioId(int portfolioId)
+        {
+            var inactiveSpotTransactions =
+                await _spotTransactionRepository.GetInactiveSpotTransactionsByPortfolioId(portfolioId);
+            if (inactiveSpotTransactions is null)
+            {
+                return RequestResult<IEnumerable<SpotTransactionDto>>
+                    .Failure(TransactionError.ErrorGetInactiveTransactionsByPortfolioId);
+            }
+
+            var inactiveSpotTransactionsDto = _mapper
+                .Map<IEnumerable<SpotTransactionDto>>(inactiveSpotTransactions);
+            return RequestResult<IEnumerable<SpotTransactionDto>>.Success(inactiveSpotTransactionsDto);
+        }
+
         public async Task<RequestResult> CalculateSpotTransactionProfit(CancellationToken cancellation)
         {
             var spotPortfolios = await _spotPortfolioService.GetSpotPortfolios();
             foreach (var spotPortfolio in spotPortfolios.Result)
             {
                 float portfolioProfit = 0;
-                var spotTransactions = await _spotTransactionRepository.GetActiveSpotTransactionsByPortfolioId(spotPortfolio.Id);
+                var spotTransactions = await
+                    _spotTransactionRepository.GetActiveSpotTransactionsByPortfolioId(spotPortfolio.Id);
                 if (spotTransactions is not null)
                 {
                     foreach (var spotTransaction in spotTransactions)
                     {
-                        var coin = await _coinService.GetCoinBySymbol(spotTransaction.CoinSymbol);
+                        var coin =
+                            await _coinService.GetCoinBySymbol(spotTransaction.CoinSymbol);
                         spotTransaction.TransactionProfit = (spotTransaction.AmountOfCoin * coin.Result.Price)
                         - spotTransaction.MoneyInput;
-                        spotTransaction.CurrentValue = coin.Result.Price * spotTransaction.AmountOfCoin;
+                        spotTransaction.CurrentTransactionWorth = coin.Result.Price * spotTransaction.AmountOfCoin;
                         portfolioProfit += spotTransaction.TransactionProfit;
                     }
                     spotPortfolio.DailyProfit += portfolioProfit;
                     spotPortfolio.WeeklyProfit += portfolioProfit;
                     spotPortfolio.MonthlyProfit += portfolioProfit;
-                    spotPortfolio.Balance += portfolioProfit;
+                    spotPortfolio.AllocatedBalance += portfolioProfit;
                 }
                 else
                 {
@@ -111,7 +128,7 @@ namespace TradingApp.Application.Services.SpotTransactionService
                 {
                     await _spotTransactionRepository.UpdateSpotTransaction(spotTransaction, cancellation);
                     var portfolio = await _spotPortfolioService.GetSpotPortfolioById(transaction.SpotPortfolioId);
-                    portfolio.Balance += transaction.TransactionProfit + transaction.MoneyInput;
+                    portfolio.DisposableBalance += transaction.TransactionProfit + transaction.MoneyInput;
                     portfolio.DailyProfit += transaction.TransactionProfit;
                     portfolio.WeeklyProfit += transaction.TransactionProfit;
                     portfolio.MonthlyProfit += transaction.TransactionProfit;
@@ -138,9 +155,11 @@ namespace TradingApp.Application.Services.SpotTransactionService
             return RequestResult.Success();
         }
 
-        public async Task<RequestResult<IEnumerable<SpotTransaction>>> GetActiveTransactionsByPortfolioId(int poiPortfolioId)
+        public async Task<RequestResult<IEnumerable<SpotTransaction>>>
+            GetActiveTransactionsByPortfolioId(int poiPortfolioId)
         {
-            var result = await _spotTransactionRepository.GetActiveSpotTransactionsByPortfolioId(poiPortfolioId);
+            var result =
+                await _spotTransactionRepository.GetActiveSpotTransactionsByPortfolioId(poiPortfolioId);
             if (result is null)
             {
                 return RequestResult<IEnumerable<SpotTransaction>>
@@ -149,11 +168,14 @@ namespace TradingApp.Application.Services.SpotTransactionService
             return RequestResult<IEnumerable<SpotTransaction>>.Success(result);
         }
 
-        public async Task<SpotTransaction> GetExistingSpotTransactionWithSpecifiedCoinSymbol(int portfolioId, string coinSymbol)
+        public async Task<SpotTransaction>
+            GetExistingSpotTransactionByCoinSymbol(int portfolioId, string coinSymbol)
         {
             var result = await _spotTransactionRepository
                 .GetExistingSpotTransactionWithSpecifiedCoinSymbol(portfolioId, coinSymbol);
             return result;
         }
+
+
     }
 }

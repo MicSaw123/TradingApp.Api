@@ -37,5 +37,16 @@ namespace TradingApp.Application.Services.PortfolioService
             var portfolioDto = _mapper.Map<PortfolioDto>(portfolio);
             return RequestResult<PortfolioDto>.Success(portfolioDto);
         }
+
+        public async Task<RequestResult> UpdatePortfolio(PortfolioDto portfolioDto, CancellationToken cancellation)
+        {
+            var portfolio = _mapper.Map<Portfolio>(portfolioDto);
+            if (portfolio is null)
+            {
+                return RequestResult.Failure(PortfolioError.ErrorUpdatePortfolio);
+            }
+            await _portfolioRepository.UpdatePortfolio(portfolio, cancellation);
+            return RequestResult.Success();
+        }
     }
 }

@@ -14,9 +14,15 @@ namespace TradingApp.BackgroundTasks.FuturesTransactionsToOpenBackgroundJob
 
         public async Task Execute(IJobExecutionContext context)
         {
-            CancellationToken cancellation = default;
-            await _futuresTransactionsToOpenService.OpenFuturesTransactionToOpen(cancellation);
-            return;
+            try
+            {
+                CancellationToken cancellation = default;
+                await _futuresTransactionsToOpenService.OpenFuturesTransactionToOpen(cancellation);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
     }
 }

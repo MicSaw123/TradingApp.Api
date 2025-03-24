@@ -1,4 +1,6 @@
-﻿namespace TradingApp.Domain.Base
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace TradingApp.Domain.Base
 {
     public class BaseTransaction
     {
@@ -16,8 +18,13 @@
 
         public float TransactionProfit { get; set; }
 
-        public float TodaysProfit { get; set; }
+        public float CurrentTransactionWorth { get; set; }
 
         public DateOnly ClosingTransactionDate { get; set; }
+
+        public DateOnly OpenTransactionDate { get; set; }
+
+        [AllowNull]
+        public DateOnly? LastEditTransactionDate { get; set; }
     }
 }

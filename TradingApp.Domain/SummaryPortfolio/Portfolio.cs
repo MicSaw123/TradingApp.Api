@@ -11,5 +11,8 @@ namespace TradingApp.Domain.SummaryPortfolio
 
         [Required]
         public int FuturesPortfolioId { get; set; }
+
+        [Required]
+        public string UserId { get; set; }
     }
 }

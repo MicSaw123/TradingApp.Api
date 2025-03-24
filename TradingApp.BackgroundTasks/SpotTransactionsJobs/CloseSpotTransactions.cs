@@ -14,9 +14,16 @@ namespace TradingApp.BackgroundTasks.SpotTransactionsJobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            CancellationToken cancellation = default;
-            await _spotTransactionService.CloseExistingSpotTransactions(cancellation);
-            return;
+            try
+            {
+                CancellationToken cancellation = default;
+                await _spotTransactionService.CloseExistingSpotTransactions(cancellation);
+                return;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
     }
 }

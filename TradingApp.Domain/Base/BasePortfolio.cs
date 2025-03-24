@@ -4,16 +4,14 @@
     {
         public int Id { get; set; }
 
-        public float Balance { get; set; }
+        public float DisposableBalance { get; set; }
 
-        public float AllTransactionsWorth { get; set; }
+        public float AllocatedBalance { get; set; }
 
         public float DailyProfit { get; set; }
 
         public float WeeklyProfit { get; set; }
 
         public float MonthlyProfit { get; set; }
-
-        public string UserId { get; set; }
     }
 }

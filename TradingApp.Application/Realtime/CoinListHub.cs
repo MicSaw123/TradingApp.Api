@@ -41,14 +41,29 @@ namespace TradingApp.Application.Realtime
         {
             _connectionManager.AddConnectionIdToList(Context.ConnectionId);
             var httpContext = Context.GetHttpContext();
-            var userId = httpContext.Request.Query["userId"];
-            _memoryCache.Set(Context.ConnectionId, userId);
+            try
+            {
+                var userId = httpContext.Request.Query["userId"];
+                _memoryCache.Set(Context.ConnectionId, userId);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            _memoryCache.Remove(Context.ConnectionId);
-            await base.OnDisconnectedAsync(exception);
+            try
+            {
+                _memoryCache.Remove(Context.ConnectionId);
+                await base.OnDisconnectedAsync(exception);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
     }
 }

@@ -109,9 +109,26 @@ namespace TradingApp.Application.Services.SpotTransactionToOpenService
             return RequestResult.Success();
         }
 
+        public async Task<RequestResult<IEnumerable<SpotTransactionToOpenDto>>>
+            GetSpotTransactionsToOpenByPortfolioId(int portfolioId)
+        {
+            var spotTransactionsToOpen =
+                await _spotTransactionToOpenRepository.GetSpotTransactionsToOpenByPortfolioId(portfolioId);
+            if (spotTransactionsToOpen is null)
+            {
+                return RequestResult<IEnumerable<SpotTransactionToOpenDto>>
+                    .Failure(TransactionToOpenError.ErrorGetAwaitingTransactionsToOpenById);
+            }
+
+            var spotTransactionsToOpenDto = _mapper
+                .Map<IEnumerable<SpotTransactionToOpenDto>>(spotTransactionsToOpen);
+            return RequestResult<IEnumerable<SpotTransactionToOpenDto>>.Success(spotTransactionsToOpenDto);
+        }
+
         public async Task<RequestResult> OpenWaitingSpotTransaction(CancellationToken cancellation)
         {
-            var spotTransactionsToOpen = await _spotTransactionToOpenRepository.GetSpotTransactionsToOpen();
+            var spotTransactionsToOpen = await
+                _spotTransactionToOpenRepository.GetSpotTransactionsToOpen();
             foreach (var spotTransactionToOpen in spotTransactionsToOpen)
             {
                 var coin = await _coinService.GetCoinBySymbol(spotTransactionToOpen.CoinSymbol);
@@ -123,10 +140,14 @@ namespace TradingApp.Application.Services.SpotTransactionToOpenService
                         var spotTransactionToAdd = _mapper.Map<SpotTransaction>(spotTransactionToOpen);
                         spotTransactionToAdd.AmountOfCoin = spotTransactionToAdd.MoneyInput / coin.Result.Price;
                         spotTransactionToAdd.IsActive = true;
+                        spotTransactionToAdd.OpenTransactionDate = DateOnly.FromDateTime(DateTime.Today);
                         spotTransactionToAdd.BuyingPrice = coin.Result.Price;
-                        spotTransactionToAdd.CurrentValue = coin.Result.Price * spotTransactionToAdd.AmountOfCoin;
+                        spotTransactionToAdd.CurrentTransactionWorth =
+                            coin.Result.Price * spotTransactionToAdd.AmountOfCoin;
+                        spotTransactionToAdd.LastEditTransactionDate = null;
                         var existingSpotTransaction = await _spotTransactionService
-                            .GetExistingSpotTransactionWithSpecifiedCoinSymbol(spotTransactionToAdd.SpotPortfolioId, spotTransactionToAdd.CoinSymbol);
+                            .GetExistingSpotTransactionByCoinSymbol
+                                (spotTransactionToAdd.SpotPortfolioId, spotTransactionToAdd.CoinSymbol);
                         if (existingSpotTransaction != null)
                         {
                             float previousPrice = existingSpotTransaction.BuyingPrice;

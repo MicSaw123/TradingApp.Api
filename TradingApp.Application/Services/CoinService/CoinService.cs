@@ -4,7 +4,6 @@ using System.Text.Json;
 using TradingApp.Application.DataTransferObjects.Coin;
 using TradingApp.Application.DataTransferObjects.PaginationDto;
 using TradingApp.Application.Repositories.Coins;
-using TradingApp.Application.Services.Interfaces.Database;
 using TradingApp.Domain.Coins;
 using TradingApp.Domain.Errors.Errors.CoinErrors;
 
@@ -12,50 +11,45 @@ namespace TradingApp.Application.Services.CoinService
 {
     public class CoinService : ICoinService
     {
-        private readonly IDbContext _context;
         private readonly IMapper _mapper;
         private readonly HttpClient _http;
         private readonly ICoinRepository _coinRepository;
         private readonly string baseApiAddress = "https://api.binance.com/api/v3/ticker/price";
 
-        public CoinService(IDbContext context, IMapper mapper, HttpClient http, ICoinRepository coinRepository)
+        public CoinService(IMapper mapper, HttpClient http, ICoinRepository coinRepository)
         {
-            _context = context;
             _mapper = mapper;
             _http = http;
             _coinRepository = coinRepository;
         }
 
-        public async Task<IEnumerable<CoinDto>> GetAllCoins()
-        {
-            var result = await _http.GetFromJsonAsync<IEnumerable<CoinDto>>(baseApiAddress);
-            return result;
-        }
-
-        public async Task<RequestResult<IEnumerable<CoinDto>>> GetCoins()
+        public async Task<RequestResult<List<CoinDto>>> GetCoins()
         {
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
             };
             List<CoinDto> coinList = new List<CoinDto>();
-            var coins = await GetAllCoins();
-            if (coins is not null)
+            var result = await _http.GetFromJsonAsync<List<CoinDto>>(baseApiAddress);
+            if (result is not null)
             {
-                foreach (var coin in coins)
+                foreach (var coin in result)
                 {
                     if (coin.Symbol.EndsWith("USDT") && coin.Price > 0)
                     {
+                        var dbCoin = await _coinRepository.GetCoinBySymbol(coin.Symbol);
+                        if (dbCoin is null)
+                        {
+                            continue;
+                        }
+                        coin.AllTimeHighPrice = dbCoin.AllTimeHighPrice;
+                        coin.AllTimeLowPrice = dbCoin.AllTimeLowPrice;
                         coinList.Add(coin);
                     }
                 }
             }
-            else
-            {
-                return RequestResult<IEnumerable<CoinDto>>.Failure(CoinError.ErrorFetchCoins);
-            }
-            var cl = coinList.AsEnumerable().OrderBy(c => c.Symbol);
-            return RequestResult<IEnumerable<CoinDto>>.Success(cl);
+            var orderedCoinList = coinList.OrderBy(x => x.Symbol).ToList();
+            return RequestResult<List<CoinDto>>.Success(orderedCoinList);
         }
 
         public async Task<RequestResult<CoinDto>> GetCoinBySymbol(string symbol)
@@ -65,27 +59,12 @@ namespace TradingApp.Application.Services.CoinService
             {
                 return RequestResult<CoinDto>.Failure(CoinError.ErrorFetchCoins);
             }
+            var allTimeValues = await _coinRepository.GetCoinBySymbol(symbol);
+            coin.AllTimeHighPrice = allTimeValues.AllTimeHighPrice;
+            coin.AllTimeLowPrice = allTimeValues.AllTimeLowPrice;
             return RequestResult<CoinDto>.Success(coin);
         }
 
-        public async Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsBySymbol(List<string> symbols)
-        {
-            List<CoinDto> coinList = new List<CoinDto>();
-            foreach (var symbol in symbols)
-            {
-                var coin = await GetCoinBySymbol(symbol);
-                if (coin is null)
-                {
-                    continue;
-                }
-                coinList.Add(coin.Result);
-            }
-            if (coinList is null)
-            {
-                return RequestResult<IEnumerable<CoinDto>>.Failure(CoinError.ErrorFetchCoins);
-            }
-            return RequestResult<IEnumerable<CoinDto>>.Success(coinList.AsEnumerable());
-        }
 
         public async Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsPerPage(PaginationDto paginationDto)
         {
@@ -100,14 +79,17 @@ namespace TradingApp.Application.Services.CoinService
 
         public async Task<RequestResult> SeedCoins(CancellationToken cancellation = default)
         {
-            var result = await GetCoins();
+            var fetchedCoins = await _http.GetFromJsonAsync<List<CoinDto>>(baseApiAddress);
             List<Coin> coins = new List<Coin>();
-            foreach (var coin in result.Result)
+            foreach (var coin in fetchedCoins)
             {
-                var mappedCoin = _mapper.Map<Coin>(coin);
-                mappedCoin.AllTimeHighPrice = coin.Price;
-                mappedCoin.AllTimeLowPrice = coin.Price;
-                coins.Add(mappedCoin);
+                if (coin.Symbol.EndsWith("USDT") && coin.Price > 0)
+                {
+                    var mappedCoin = _mapper.Map<Coin>(coin);
+                    mappedCoin.AllTimeHighPrice = coin.Price;
+                    mappedCoin.AllTimeLowPrice = coin.Price;
+                    coins.Add(mappedCoin);
+                }
             }
             if (coins != null)
             {
@@ -120,24 +102,31 @@ namespace TradingApp.Application.Services.CoinService
         public async Task<RequestResult> UpdateAllTimeValues(CancellationToken cancellation)
         {
             var storedCoins = await _coinRepository.GetCoins();
-            foreach (var coin in storedCoins)
+            try
             {
-                var currentValues = await GetCoinBySymbol(coin.Symbol);
-                if (currentValues.Result.Price > coin.AllTimeHighPrice)
+                foreach (var coin in storedCoins)
                 {
-                    coin.AllTimeHighPrice = currentValues.Result.Price;
+                    var currentValues = await GetCoinBySymbol(coin.Symbol);
+                    if (currentValues.Result.Price > coin.AllTimeHighPrice)
+                    {
+                        coin.AllTimeHighPrice = currentValues.Result.Price;
+                    }
+                    if (currentValues.Result.Price < coin.AllTimeLowPrice)
+                    {
+                        coin.AllTimeLowPrice = currentValues.Result.Price;
+                    }
                 }
-                if (currentValues.Result.Price < coin.AllTimeLowPrice)
+                await _coinRepository.EditCoins(storedCoins, cancellation);
+                if (cancellation.IsCancellationRequested)
                 {
-                    coin.AllTimeLowPrice = currentValues.Result.Price;
+                    return RequestResult.Failure(CoinError.ErrorUpdateCoins);
                 }
+                return RequestResult.Success();
             }
-            await _coinRepository.EditCoins(storedCoins, cancellation);
-            if (cancellation.IsCancellationRequested)
+            catch (Exception ex)
             {
-                return RequestResult.Failure(CoinError.ErrorUpdateCoins);
+                throw;
             }
-            return RequestResult.Success();
         }
     }
 }

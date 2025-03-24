@@ -16,6 +16,9 @@ namespace TradingApp.Domain.Errors.Errors.TransactionErrors
 
         public static readonly Error ErrorRemoveTransactionProfit = new RemoveTransactionProfitError();
 
+        public static readonly Error ErrorGetInactiveTransactionsByPortfolioId =
+            new GetInactiveTransactionsByPortfolioIdError();
+
         private class GetTransactionsByPortfolioIdError : Error
         {
             public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
@@ -71,6 +74,17 @@ namespace TradingApp.Domain.Errors.Errors.TransactionErrors
             public RemoveTransactionProfitError() : base(nameof(ErrorRemoveTransactionProfit), 906)
             {
                 Message = "There was an error while removing profit from portfolio!";
+            }
+        }
+
+        private class GetInactiveTransactionsByPortfolioIdError : Error
+        {
+            public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
+
+            public GetInactiveTransactionsByPortfolioIdError()
+                : base(nameof(ErrorGetInactiveTransactionsByPortfolioId), 907)
+            {
+                Message = "There was an error while fetching inactive transactions for this portfolio";
             }
         }
     }

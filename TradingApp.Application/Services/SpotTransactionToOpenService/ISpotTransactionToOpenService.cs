@@ -13,5 +13,8 @@ namespace TradingApp.Application.Services.SpotTransactionToOpenService
 
         Task<RequestResult> EditAwaitingSpotTransaction(SpotTransactionToOpenDto spotTransactionToOpenDto,
             CancellationToken cancellation);
+
+        Task<RequestResult<IEnumerable<SpotTransactionToOpenDto>>>
+            GetSpotTransactionsToOpenByPortfolioId(int portfolioId);
     }
 }

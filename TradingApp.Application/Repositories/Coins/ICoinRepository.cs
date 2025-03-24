@@ -9,5 +9,7 @@ namespace TradingApp.Application.Repositories.Coins
         Task EditCoins(List<Coin> coins, CancellationToken cancellation);
 
         Task AddCoins(List<Coin> coins, CancellationToken cancellation);
+
+        Task<Coin> GetCoinBySymbol(string coinSymbol);
     }
 }

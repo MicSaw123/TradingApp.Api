@@ -13,7 +13,7 @@ namespace TradingApp.Application.Repositories.FuturesTransactionToOpenRepository
 
         Task<FuturesTransactionToOpen> GetFuturesTransactionToOpenById(int id);
 
-        Task<IEnumerable<FuturesTransactionToOpen>> GetFuturesTransactionsToOpen();
+        Task<List<FuturesTransactionToOpen>> GetFuturesTransactionsToOpen();
 
         Task EditFuturesTransactionToOpen(FuturesTransactionToOpen futuresTransactionToOpen,
             CancellationToken cancellation);

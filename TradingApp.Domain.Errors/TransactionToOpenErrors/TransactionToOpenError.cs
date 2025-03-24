@@ -12,6 +12,8 @@ namespace TradingApp.Domain.Errors.TransactionToOpenErrors
 
         public static readonly Error ErrorOpenAwaitingTransactionToOpen = new OpenAwaitingTransactionToOpenError();
 
+        public static readonly Error ErrorGetAwaitingTransactionsToOpenById = new GetAwaitingTransactionsByIdError();
+
         private sealed class AddTransactionToOpenError : Error
         {
             public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
@@ -46,6 +48,15 @@ namespace TradingApp.Domain.Errors.TransactionToOpenErrors
             public OpenAwaitingTransactionToOpenError() : base(nameof(OpenAwaitingTransactionToOpenError), 2004)
             {
                 Message = "There was an error while opening awaiting transaction";
+            }
+        }
+
+        private sealed class GetAwaitingTransactionsByIdError : Error
+        {
+            public override HttpStatusCode HttpStatusCode => HttpStatusCode.BadRequest;
+            public GetAwaitingTransactionsByIdError() : base(nameof(GetAwaitingTransactionsByIdError), 2005)
+            {
+                Message = "There was an error while getting transactions to open for this portfolio";
             }
         }
     }

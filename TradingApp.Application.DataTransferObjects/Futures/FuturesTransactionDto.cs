@@ -10,5 +10,7 @@ namespace TradingApp.Application.DataTransferObjects.Transaction
 
         [AllowNull]
         public float ClosingPrice { get; set; }
+
+        public bool IsShort { get; set; }
     }
 }

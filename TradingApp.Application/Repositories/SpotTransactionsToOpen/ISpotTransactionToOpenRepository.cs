@@ -12,7 +12,7 @@ namespace TradingApp.Application.Repositories.SpotTransactionToAdd
 
         Task<SpotTransactionToOpen> GetSpotTransactionToOpenById(int id);
 
-        Task<IEnumerable<SpotTransactionToOpen>> GetSpotTransactionsToOpen();
+        Task<List<SpotTransactionToOpen>> GetSpotTransactionsToOpen();
 
         Task EditSpotTransactionToOpen(SpotTransactionToOpen futuresTransactionToOpen,
             CancellationToken cancellation);

@@ -32,26 +32,36 @@ namespace TradingApp.BackgroundTasks.CoinBackgroundJobs
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                var connectionList = await _connectionManager.GetAllConnections();
-                foreach (var connection in connectionList)
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    var userId = _memoryCache.Get(connection);
-                    var pageInfo = (PaginationDto)_memoryCache.Get(userId);
-                    if (pageInfo is null)
+                    var connectionList = await _connectionManager.GetAllConnections();
+                    foreach (var connection in connectionList)
                     {
-                        continue;
+                        var userId = _memoryCache.Get(connection);
+                        var pageInfo = (PaginationDto)_memoryCache.Get(userId);
+                        if (pageInfo is null)
+                        {
+                            pageInfo = new PaginationDto();
+                            pageInfo.Page = 1;
+                            pageInfo.PageSize = 15;
+                            _memoryCache.Set(userId, pageInfo);
+                        }
+                        using (var scope = _serviceProvider.CreateScope())
+                        {
+                            var coinService = scope.ServiceProvider.GetService<ICoinService>();
+                            var coins = await coinService!.GetCoinsPerPage(pageInfo);
+                            var coinList = coins.Result.ToList();
+                            await _hubContext.Clients.Client(connection).GetCoinsPerPage(coinList);
+                        }
                     }
-                    using (var scope = _serviceProvider.CreateScope())
-                    {
-                        var coinService = scope.ServiceProvider.GetService<ICoinService>();
-                        var coins = await coinService!.GetCoinsPerPage(pageInfo);
-                        var coinList = coins.Result.ToList();
-                        await _hubContext.Clients.Client(connection).GetCoinsPerPage(coinList);
-                    }
+                    await Task.Delay(5000);
                 }
-                await Task.Delay(5000);
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
         }
     }

@@ -16,9 +16,11 @@ namespace TradingApp.Application.Services.SpotTransactionService
 
         Task<RequestResult<IEnumerable<SpotTransaction>>> GetActiveTransactionsByPortfolioId(int portfolioId);
 
-        Task<SpotTransaction> GetExistingSpotTransactionWithSpecifiedCoinSymbol(int portfolioId, string coinSymbol);
+        Task<SpotTransaction> GetExistingSpotTransactionByCoinSymbol(int portfolioId, string coinSymbol);
 
         Task AddSpotTransaction(SpotTransaction spotTransaction, CancellationToken cancellation);
 
+        Task<RequestResult<IEnumerable<SpotTransactionDto>>>
+            GetInactiveSpotTransactionsByPortfolioId(int portfolioId);
     }
 }

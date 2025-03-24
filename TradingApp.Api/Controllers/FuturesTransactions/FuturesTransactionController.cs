@@ -16,10 +16,11 @@ namespace TradingApp.Api.Controllers.FuturesTransactions
             _futuresTransactionService = futuresTransactionService;
         }
 
-        [HttpGet("GetFuturesTransactionsByPortfolioId")]
+        [HttpGet("GetActiveFuturesTransactionsByPortfolioId")]
         public async Task<IActionResult> GetFuturesTransactionsByPortfolioId(int portfolioId)
         {
-            return CreateResponse(await _futuresTransactionService.GetFuturesTransactionsByPortfolioId(portfolioId));
+            return CreateResponse(await _futuresTransactionService
+                .GetActiveFuturesTransactionsByPortfolioId(portfolioId));
         }
 
         [HttpPut("CloseFuturesTransaction")]
@@ -35,6 +36,13 @@ namespace TradingApp.Api.Controllers.FuturesTransactions
         {
             return CreateResponse(await _futuresTransactionService
                 .EditFuturesTransaction(futuresTransactionDto, cancellation));
+        }
+
+        [HttpGet("GetInactiveFuturesTransactionsByPortfolioId")]
+        public async Task<IActionResult> GetInactiveFuturesTransactionsByPortfolioId(int portfolioId)
+        {
+            return CreateResponse
+                (await _futuresTransactionService.GetInactiveFuturesTransactionsByPortfolioId(portfolioId));
         }
     }
 }

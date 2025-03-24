@@ -15,7 +15,7 @@ namespace TradingApp.Api.Controllers.Portfolio
             _portfolioService = portfolioService;
         }
 
-        [HttpGet]
+        [HttpGet("GetPortfolioByUserId")]
         public async Task<IActionResult> GetPortfolioByUserId(string userId)
         {
             return CreateResponse(await _portfolioService.GetPortfolioByUserId(userId));

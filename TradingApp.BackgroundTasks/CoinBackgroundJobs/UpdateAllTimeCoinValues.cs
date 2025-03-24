@@ -14,9 +14,16 @@ namespace TradingApp.BackgroundTasks.CoinBackgroundJobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            CancellationToken cancellation = default;
-            await _coinService.UpdateAllTimeValues(cancellation);
-            return;
+            try
+            {
+                CancellationToken cancellation = default;
+                await _coinService.UpdateAllTimeValues(cancellation);
+                return;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
     }
 }

@@ -24,5 +24,11 @@ namespace TradingApp.Application.Repositories.SummaryPortfolio
             var portfolio = await _context.Set<Portfolio>().FirstOrDefaultAsync(x => x.UserId == userId);
             return portfolio;
         }
+
+        public async Task UpdatePortfolio(Portfolio portfolio, CancellationToken cancellation)
+        {
+            _context.Set<Portfolio>().UpdateRange(portfolio);
+            await _context.SaveChangesAsync(cancellation);
+        }
     }
 }

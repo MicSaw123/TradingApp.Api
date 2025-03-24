@@ -1,4 +1,6 @@
-﻿using TradingApp.Application.Repositories.SpotPortfolioRepository;
+﻿using AutoMapper;
+using TradingApp.Application.DataTransferObjects.Portfolio;
+using TradingApp.Application.Repositories.SpotPortfolioRepository;
 using TradingApp.Domain.Errors.Errors.SpotPortfolioErrors;
 using TradingApp.Domain.Spot;
 
@@ -7,16 +9,18 @@ namespace TradingApp.Application.Services.SpotPortfolioService
     public class SpotPortfolioService : ISpotPortfolioService
     {
         private readonly ISpotPortfolioRepository _spotPortfolioRepository;
+        private readonly IMapper _mapper;
 
-        public SpotPortfolioService(ISpotPortfolioRepository spotPortfolioRepository)
+        public SpotPortfolioService(ISpotPortfolioRepository spotPortfolioRepository, IMapper mapper)
         {
             _spotPortfolioRepository = spotPortfolioRepository;
+            _mapper = mapper;
         }
 
         public async Task<RequestResult> AddBalance(int id, float amountToAdd, CancellationToken cancellation)
         {
             var spotPortfolio = await _spotPortfolioRepository.GetSpotPortfolioById(id);
-            spotPortfolio.Balance += amountToAdd;
+            spotPortfolio.DisposableBalance += amountToAdd;
             if (spotPortfolio is null)
             {
                 return RequestResult.Failure(PortfolioError.ErrorAddFunds);
@@ -50,30 +54,31 @@ namespace TradingApp.Application.Services.SpotPortfolioService
             return RequestResult.Success();
         }
 
-        public Task<SpotPortfolio> GetSpotPortfolioById(int portfolioId)
+        public async Task<SpotPortfolio> GetSpotPortfolioById(int portfolioId)
         {
-            var spotPortfolio = _spotPortfolioRepository.GetSpotPortfolioById(portfolioId);
+            var spotPortfolio = await _spotPortfolioRepository.GetSpotPortfolioById(portfolioId);
             return spotPortfolio;
         }
 
-        public async Task<RequestResult<SpotPortfolio>> GetSpotPortfolioByUserId(string userId)
+        public async Task<RequestResult<SpotPortfolioDto>> GetSpotPortfolioDtoById(int portfolioId)
         {
-            var spotPortfolio = await _spotPortfolioRepository.GetSpotPortfolioByUserId(userId);
-            if (spotPortfolio is null)
+            var spotPortfolio = await GetSpotPortfolioById(portfolioId);
+            var spotPortfolioDto = _mapper.Map<SpotPortfolioDto>(spotPortfolio);
+            if (spotPortfolioDto is null)
             {
-                return RequestResult<SpotPortfolio>.Failure(PortfolioError.ErrorGetPortfolioByUserId);
+                return RequestResult<SpotPortfolioDto>.Failure(PortfolioError.ErrorGetPortfolioById);
             }
-            return RequestResult<SpotPortfolio>.Success(spotPortfolio);
+            return RequestResult<SpotPortfolioDto>.Success(spotPortfolioDto);
         }
 
-        public async Task<RequestResult<IEnumerable<SpotPortfolio>>> GetSpotPortfolios()
+        public async Task<RequestResult<List<SpotPortfolio>>> GetSpotPortfolios()
         {
             var result = await _spotPortfolioRepository.GetSpotPortfolios();
             if (result is null)
             {
-                return RequestResult<IEnumerable<SpotPortfolio>>.Failure(PortfolioError.ErrorGetPortfolioById);
+                return RequestResult<List<SpotPortfolio>>.Failure(PortfolioError.ErrorGetPortfolioById);
             }
-            return RequestResult<IEnumerable<SpotPortfolio>>.Success(result);
+            return RequestResult<List<SpotPortfolio>>.Success(result);
         }
 
         public async Task<RequestResult> RemoveMonthlyProfitFromPortfolio(int portfolioId, float amountToRemove, CancellationToken cancellation)
@@ -110,8 +115,8 @@ namespace TradingApp.Application.Services.SpotPortfolioService
             CancellationToken cancellation)
         {
             var spotPortfolio = await _spotPortfolioRepository.GetSpotPortfolioById(id);
-            spotPortfolio.Balance -= amountToSubtract;
-            if (spotPortfolio.Balance < 0)
+            spotPortfolio.DisposableBalance -= amountToSubtract;
+            if (spotPortfolio.DisposableBalance < 0)
             {
                 return RequestResult.Failure(PortfolioError.NonSufficientFunds);
             }

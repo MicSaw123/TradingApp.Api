@@ -84,7 +84,10 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddBackgroundTasks();
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+});
 builder.Services.AddApplication();
 builder.Services.AddHttpClient();
 builder.Services.AddHostedService<GetCoinsPerPageBackgroundJob>();

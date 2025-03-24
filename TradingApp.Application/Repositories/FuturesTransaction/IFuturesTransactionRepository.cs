@@ -15,5 +15,8 @@ namespace TradingApp.Application.Repositories.TransactionRepository.FuturesTrans
 
         Task AddFuturesTransaction(FuturesTransaction futuresTransaction, CancellationToken cancellation);
 
+        Task<IEnumerable<FuturesTransaction>> GetInactiveFuturesTransactionsByPortfolioId(int portfolioId);
+
+        Task<FuturesTransaction> GetFuturesTransactionByCoinSymbol(int portfolioId, string coinSymbol);
     }
 }

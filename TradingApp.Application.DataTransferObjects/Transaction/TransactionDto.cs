@@ -8,8 +8,14 @@
 
         public float MoneyInput { get; set; }
 
-        public bool isActive { get; set; }
-
         public float TransactionProfit { get; set; }
+
+        public float AmountOfCoin { get; set; }
+
+        public DateOnly ClosingTransactionDate { get; set; }
+
+        public DateOnly OpenTransactionDate { get; set; }
+
+        public DateOnly LastEditTransactionDate { get; set; }
     }
 }

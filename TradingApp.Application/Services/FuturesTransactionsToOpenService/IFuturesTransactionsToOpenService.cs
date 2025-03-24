@@ -13,5 +13,8 @@ namespace TradingApp.Application.Services.FuturesTransactionsToOpenService
 
         Task<RequestResult> EditFuturesTransactionToOpen(FuturesTransactionToOpenDto futuresTransactionToOpenDto,
             CancellationToken cancellation);
+
+        Task<RequestResult<IEnumerable<FuturesTransactionToOpenDto>>>
+            GetFuturesTransactionsToOpenById(int portfolioId);
     }
 }

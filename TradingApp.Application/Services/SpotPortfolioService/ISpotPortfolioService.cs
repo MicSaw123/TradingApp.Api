@@ -1,4 +1,5 @@
-﻿using TradingApp.Domain.Spot;
+﻿using TradingApp.Application.DataTransferObjects.Portfolio;
+using TradingApp.Domain.Spot;
 
 namespace TradingApp.Application.Services.SpotPortfolioService
 {
@@ -14,15 +15,15 @@ namespace TradingApp.Application.Services.SpotPortfolioService
 
         Task<RequestResult> RemoveWeeklyProfitFromPortfolio(int portfolioId, float amountToRemove, CancellationToken cancellation);
 
-        Task<RequestResult<IEnumerable<SpotPortfolio>>> GetSpotPortfolios();
+        Task<RequestResult<List<SpotPortfolio>>> GetSpotPortfolios();
 
         Task<RequestResult> EditSpotPortfolios(List<SpotPortfolio> spotPortfolio, CancellationToken cancellation);
 
         Task<SpotPortfolio> GetSpotPortfolioById(int portfolioId);
 
-        Task EditSpotPortfolio(SpotPortfolio spotPortfolio, CancellationToken cancellation);
+        Task<RequestResult<SpotPortfolioDto>> GetSpotPortfolioDtoById(int portfolioId);
 
-        Task<RequestResult<SpotPortfolio>> GetSpotPortfolioByUserId(string userId);
+        Task EditSpotPortfolio(SpotPortfolio spotPortfolio, CancellationToken cancellation);
 
         Task<RequestResult> AddSpotPortfolio(SpotPortfolio spotPortfolio, CancellationToken cancellation);
     }

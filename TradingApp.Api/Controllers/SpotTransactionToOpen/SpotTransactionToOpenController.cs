@@ -47,7 +47,15 @@ namespace TradingApp.Api.Controllers.SpotTransactionToOpen
             CancellationToken cancellation = default)
         {
             return CreateResponse
-                (await _spotTransactionToOpenService.EditAwaitingSpotTransaction(spotTransactionToOpenDto, cancellation));
+                (await _spotTransactionToOpenService
+                    .EditAwaitingSpotTransaction(spotTransactionToOpenDto, cancellation));
+        }
+
+        [HttpGet("GetSpotTransactionsToOpenByPortfolioId")]
+        public async Task<IActionResult> GetSpotTransactionsToOpenByPortfolioId(int portfolioId)
+        {
+            return CreateResponse(
+                await _spotTransactionToOpenService.GetSpotTransactionsToOpenByPortfolioId(portfolioId));
         }
     }
 }

@@ -21,12 +21,6 @@ namespace TradingApp.Api.Controllers.Coin
             return CreateResponse(await _coinService.GetCoins());
         }
 
-        [HttpPost("GetCoinsBySymbol")]
-        public async Task<IActionResult> GetCoinsBySymbol([FromBody] List<string> symbols)
-        {
-            return CreateResponse(await _coinService.GetCoinsBySymbol(symbols));
-        }
-
         [HttpPost("SeedCoins")]
         public async Task<IActionResult> SeedCoins(CancellationToken cancellation)
         {
@@ -37,6 +31,12 @@ namespace TradingApp.Api.Controllers.Coin
         public async Task<IActionResult> GetCoinsPerPage([FromBody] PaginationDto paginationDto)
         {
             return CreateResponse(await _coinService.GetCoinsPerPage(paginationDto));
+        }
+
+        [HttpGet("GetCoinBySymbol")]
+        public async Task<IActionResult> GetCoinBySymbol(string coinSymbol)
+        {
+            return CreateResponse(await _coinService.GetCoinBySymbol(coinSymbol));
         }
     }
 }

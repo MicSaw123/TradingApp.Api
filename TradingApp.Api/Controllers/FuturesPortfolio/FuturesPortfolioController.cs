@@ -16,15 +16,22 @@ namespace TradingApp.Api.Controllers.FuturesPortfolio
         }
 
         [HttpPost("AddBalance")]
-        public async Task<RequestResult> AddBalance(int id, float amountToAdd, CancellationToken cancellation)
+        public async Task<IActionResult> AddBalance(int id, float amountToAdd, CancellationToken cancellation)
         {
-            return await _futuresPortfolioService.AddBalance(id, amountToAdd, cancellation);
+            return CreateResponse(await _futuresPortfolioService.AddBalance(id, amountToAdd, cancellation));
+        }
+
+        [HttpGet("GetFuturesPortfolioById")]
+        public async Task<IActionResult> GetFuturesPortfolioById(int portfolioId)
+        {
+            return CreateResponse(await _futuresPortfolioService.GetFuturesPortfolioDtoById(portfolioId));
         }
 
         [HttpPost("SubtractBalance")]
-        public async Task<RequestResult> Subtract(int id, float amountToSubtract, CancellationToken cancellation)
+        public async Task<IActionResult> Subtract(int id, float amountToSubtract, CancellationToken cancellation)
         {
-            return await _futuresPortfolioService.SubtractBalance(id, amountToSubtract, cancellation);
+            return CreateResponse
+                (await _futuresPortfolioService.SubtractBalance(id, amountToSubtract, cancellation));
         }
     }
 }

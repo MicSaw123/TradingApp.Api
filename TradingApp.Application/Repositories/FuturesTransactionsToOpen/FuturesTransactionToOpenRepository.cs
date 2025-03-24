@@ -45,9 +45,9 @@ namespace TradingApp.Application.Repositories.FuturesTransactionsToOpen
             return futuresTransactionToOpen;
         }
 
-        public async Task<IEnumerable<FuturesTransactionToOpen>> GetFuturesTransactionsToOpen()
+        public async Task<List<FuturesTransactionToOpen>> GetFuturesTransactionsToOpen()
         {
-            var transactions = _context.Set<FuturesTransactionToOpen>().AsEnumerable();
+            var transactions = _context.Set<FuturesTransactionToOpen>().ToList();
             return transactions;
         }
 

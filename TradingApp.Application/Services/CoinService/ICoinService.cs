@@ -5,9 +5,7 @@ namespace TradingApp.Application.Services.CoinService
 {
     public interface ICoinService
     {
-        public Task<RequestResult<IEnumerable<CoinDto>>> GetCoins();
-
-        public Task<RequestResult<IEnumerable<CoinDto>>> GetCoinsBySymbol(List<string> symbols);
+        public Task<RequestResult<List<CoinDto>>> GetCoins();
 
         public Task<RequestResult<CoinDto>> GetCoinBySymbol(string symbol);
 

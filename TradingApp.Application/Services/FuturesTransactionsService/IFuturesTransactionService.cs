@@ -1,4 +1,5 @@
 ﻿using TradingApp.Application.DataTransferObjects.Transaction;
+using TradingApp.Domain.Futures;
 
 namespace TradingApp.Application.Services.FuturesTransactionsService
 {
@@ -7,11 +8,19 @@ namespace TradingApp.Application.Services.FuturesTransactionsService
         Task<RequestResult> CloseFuturesTransaction(int id, int portfolioId, CancellationToken cancellation);
 
         Task<RequestResult<IEnumerable<FuturesTransactionDto>>>
-            GetFuturesTransactionsByPortfolioId(int portfolioId);
+            GetActiveFuturesTransactionsByPortfolioId(int portfolioId);
 
         Task<RequestResult> CalculateTransactionsProfits(CancellationToken cancellation);
 
         Task<RequestResult> EditFuturesTransaction(FuturesTransactionDto futuresTransactionDto,
+            CancellationToken cancellation);
+
+        Task<RequestResult<IEnumerable<FuturesTransactionDto>>>
+            GetInactiveFuturesTransactionsByPortfolioId(int portfolioId);
+
+        Task<FuturesTransaction> GetFuturesTransactionByCoinSymbol(int portfolioId, string coinSymbol);
+
+        Task AddFuturesTransaction(FuturesTransaction futuresTransaction,
             CancellationToken cancellation);
     }
 }

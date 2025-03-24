@@ -22,5 +22,18 @@ namespace TradingApp.Api.Controllers.Transactions
         {
             return CreateResponse(await _spotTransactionService.EditSpotTransaction(transactionDto, cancellation));
         }
+
+        [HttpGet("GetInactiveSpotTransactionsByPortfolioId")]
+        public async Task<IActionResult> GetInactiveSpotTransactionsByPortfolioId(int portfolioId)
+        {
+            return CreateResponse(await _spotTransactionService
+                .GetInactiveSpotTransactionsByPortfolioId(portfolioId));
+        }
+
+        [HttpGet("GetActiveSpotTransactionsByPortfolioId")]
+        public async Task<IActionResult> GetActiveSpotTransactionsByPortfolioId(int portfolioId)
+        {
+            return CreateResponse(await _spotTransactionService.GetActiveTransactionsByPortfolioId(portfolioId));
+        }
     }
 }

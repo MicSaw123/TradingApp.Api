@@ -21,9 +21,14 @@ namespace TradingApp.Application.Services.AutoMapperProfiles
             CreateMap<FuturesTransactionDto, FuturesTransaction>().ReverseMap();
             CreateMap<SpotPortfolioDto, SpotPortfolio>().ReverseMap();
             CreateMap<PortfolioDto, Portfolio>().ReverseMap();
+            CreateMap<FuturesPortfolioDto, FuturesPortfolio>().ReverseMap();
             CreateMap<CoinDto, Coin>().ReverseMap();
             CreateMap<FuturesTransactionToOpenDto, FuturesTransactionToOpen>().ReverseMap();
             CreateMap<SpotTransactionToOpenDto, SpotTransactionToOpen>().ReverseMap();
+            CreateMap<FuturesTransactionToOpen, FuturesTransaction>()
+                .ForMember(x => x.Id, opt =>
+                    opt.Ignore()).ReverseMap();
+
             CreateMap<SpotTransactionToOpen, SpotTransaction>()
                 .ForMember(x => x.Id, opt => opt.Ignore()).ReverseMap();
             CreateMap<FuturesTransactionToOpenDto, FuturesTransaction>()
