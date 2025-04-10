@@ -27,6 +27,7 @@ namespace TradingApp.Api.Controllers.Coin
             return CreateResponse(await _coinService.SeedCoins(cancellation));
         }
 
+
         [HttpPost("GetCoinsPerPage")]
         public async Task<IActionResult> GetCoinsPerPage([FromBody] PaginationDto paginationDto)
         {

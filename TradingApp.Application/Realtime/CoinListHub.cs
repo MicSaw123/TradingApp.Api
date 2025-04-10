@@ -44,7 +44,14 @@ namespace TradingApp.Application.Realtime
             try
             {
                 var userId = httpContext.Request.Query["userId"];
-                _memoryCache.Set(Context.ConnectionId, userId);
+                if (userId == "")
+                {
+                    _memoryCache.Set(Context.ConnectionId, Context.ConnectionId);
+                }
+                else
+                {
+                    _memoryCache.Set(Context.ConnectionId, userId);
+                }
             }
             catch (Exception ex)
             {
@@ -57,8 +64,10 @@ namespace TradingApp.Application.Realtime
         {
             try
             {
+                _connectionManager.RemoveConnectionById(Context.ConnectionId);
                 _memoryCache.Remove(Context.ConnectionId);
                 await base.OnDisconnectedAsync(exception);
+
             }
             catch (Exception ex)
             {

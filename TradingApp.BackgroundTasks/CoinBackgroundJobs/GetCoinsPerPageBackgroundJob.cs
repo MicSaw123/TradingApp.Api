@@ -40,6 +40,10 @@ namespace TradingApp.BackgroundTasks.CoinBackgroundJobs
                     foreach (var connection in connectionList)
                     {
                         var userId = _memoryCache.Get(connection);
+                        if (userId is null)
+                        {
+                            continue;
+                        }
                         var pageInfo = (PaginationDto)_memoryCache.Get(userId);
                         if (pageInfo is null)
                         {

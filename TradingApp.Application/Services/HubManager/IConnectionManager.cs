@@ -5,5 +5,7 @@
         void AddConnectionIdToList(string connectionId);
 
         Task<List<string>> GetAllConnections();
+
+        void RemoveConnectionById(string connectionId);
     }
 }
