@@ -44,7 +44,7 @@ namespace TradingApp.Application.Realtime
             try
             {
                 var userId = httpContext.Request.Query["userId"];
-                if (userId == "")
+                if (string.IsNullOrEmpty(userId))
                 {
                     _memoryCache.Set(Context.ConnectionId, Context.ConnectionId);
                 }
