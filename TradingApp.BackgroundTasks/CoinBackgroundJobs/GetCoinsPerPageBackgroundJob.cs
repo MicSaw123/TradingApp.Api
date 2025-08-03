@@ -36,28 +36,33 @@ namespace TradingApp.BackgroundTasks.CoinBackgroundJobs
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    var connectionList = await _connectionManager.GetAllConnections();
-                    foreach (var connection in connectionList)
+                    var connectionList = (await _connectionManager.GetAllConnections()).ToList();
+                    if (connectionList.Count > 0)
                     {
-                        var userId = _memoryCache.Get(connection);
-                        if (userId is null)
+                        foreach (var connection in connectionList)
                         {
-                            continue;
-                        }
-                        var pageInfo = (PaginationDto)_memoryCache.Get(userId);
-                        if (pageInfo is null)
-                        {
-                            pageInfo = new PaginationDto();
-                            pageInfo.Page = 1;
-                            pageInfo.PageSize = 15;
-                            _memoryCache.Set(userId, pageInfo);
-                        }
-                        using (var scope = _serviceProvider.CreateScope())
-                        {
-                            var coinService = scope.ServiceProvider.GetService<ICoinService>();
-                            var coins = await coinService!.GetCoinsPerPage(pageInfo);
-                            var coinList = coins.Result.ToList();
-                            await _hubContext.Clients.Client(connection).GetCoinsPerPage(coinList);
+                            var userId = _memoryCache.Get(connection);
+                            if (userId is null)
+                            {
+                                continue;
+                            }
+                            var pageInfo = (PaginationDto)_memoryCache.Get(userId);
+                            if (pageInfo is null)
+                            {
+                                pageInfo = new PaginationDto()
+                                {
+                                    Page = 1,
+                                    PageSize = 15
+                                };
+                                _memoryCache.Set(userId, pageInfo);
+                            }
+                            using (var scope = _serviceProvider.CreateScope())
+                            {
+                                var coinService = scope.ServiceProvider.GetService<ICoinService>();
+                                var coins = await coinService!.GetCoinsPerPage(pageInfo);
+                                var coinList = coins.Result.ToList();
+                                await _hubContext.Clients.Client(connection).GetCoinsPerPage(coinList);
+                            }
                         }
                     }
                     await Task.Delay(5000);
